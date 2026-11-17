@@ -4,6 +4,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="勉強タイマー">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" href="icon-192.png">
 <meta name="theme-color" content="#0A0B1E">
 <title>勉強タイマー 試作</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -32,6 +38,7 @@ b{font-weight:800}
 .up{color:var(--green)!important}
 .scr{position:fixed;inset:0;display:none;flex-direction:column;padding:max(12px,env(safe-area-inset-top)) 16px max(14px,env(safe-area-inset-bottom));overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch}
 .scr.on{display:flex}
+.scr>*,.rwrap>*{flex-shrink:0}
 
 /* ===== 部品 ===== */
 .panel{position:relative;background:linear-gradient(180deg,#1D2050 0%,#15173B 100%);border:1px solid var(--line);border-radius:24px;box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 12px 28px rgba(0,0,0,.35)}
@@ -125,6 +132,8 @@ b{font-weight:800}
 .subj:active{transform:scale(.96)}
 .subj svg{width:18px;height:18px;color:var(--ink2)}
 .subj .k{color:var(--ink3);font-size:13px;font-weight:700}
+.subj .sv{display:flex;align-items:center;gap:6px}
+.subj .sv svg{width:16px;height:16px}
 .start{min-height:68px;border-radius:22px;font-size:21px;font-weight:900;letter-spacing:.06em}
 .start .pl{width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.24);display:flex;align-items:center;justify-content:center;box-shadow:inset 0 1px 0 rgba(255,255,255,.45)}
 .start .pl svg{width:14px;height:14px;margin-left:3px}
@@ -133,7 +142,7 @@ b{font-weight:800}
 #timer{--tfg:#EEF0FF;--tac:#3D9BFF;color:var(--tfg);align-items:center;transition:background .6s}
 .tsubj{margin-top:max(2vh,6px);margin-bottom:12px;display:flex;align-items:center;gap:6px;min-height:34px;padding:0 14px;border-radius:999px;background:rgba(255,255,255,.07);font-size:15px;font-weight:800;opacity:.8}
 .tsubj svg{width:16px;height:16px}
-.ringwrap{position:relative;width:min(82vw,316px);aspect-ratio:1;margin-top:auto;flex:none}
+.ringwrap{position:relative;width:min(82vw,316px,44vh);aspect-ratio:1;margin-top:auto;flex:none}
 .tring{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
 .tring .trk{fill:none;stroke:rgba(255,255,255,.07);stroke-width:14}
 .tring .tfl{fill:none;stroke:var(--tac);stroke-width:14;stroke-linecap:round;opacity:.9;transition:stroke-dashoffset 1s ease-out}
@@ -144,7 +153,8 @@ b{font-weight:800}
 .tcenter{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
 .tlab{font-size:13px;font-weight:800;opacity:.55;letter-spacing:.14em}
 .clock{font-family:var(--num);font-weight:700;line-height:1;white-space:nowrap;margin:2px 0 8px}
-.clock .dg{display:inline-block;font-size:104px}
+.clock .dg{display:inline-block;font-size:min(104px,14vh)}
+.clock:has(i+.dg) .dg{font-size:min(86px,11.5vh)}
 .clock i{font-family:var(--jp);font-style:normal;font-size:22px;opacity:.6;margin:0 6px 0 3px;font-weight:800}
 .dg.roll{animation:roll .5s cubic-bezier(.2,.8,.3,1)}
 @keyframes roll{from{transform:translateY(45%);opacity:0}to{transform:none;opacity:1}}
@@ -338,6 +348,40 @@ b{font-weight:800}
 .sheet .in button:last-child{border-bottom:0;color:var(--ink2)}
 .sheet .in button.cur{color:#8CCBFF}
 .sheet .in button.cur::after{content:"✓";font-weight:900}
+/* 低い画面（全画面のアプリで 852pt 前後＝上下の余白を引いた分） */
+@media (max-height:880px){
+ .hhead{padding-bottom:10px}
+ #hToday{margin:6px 0 2px}#hToday b{font-size:80px}
+ .dbar{margin:26px 0 10px}
+ .wkhead{min-height:34px;margin-bottom:10px}
+ .wd i{width:32px;height:32px}
+ .wkbar{margin-top:12px;padding-top:10px}
+ .tl{min-height:80px}.tl .art{width:54px;height:45px}
+ .startwrap{padding-top:12px}.start{min-height:62px}
+}
+/* もっと低い画面（Safari で上下のバーが出ている時＝650pt 前後） */
+@media (max-height:720px){
+ .scr{padding-top:max(8px,env(safe-area-inset-top))}
+ .hhead{padding:0 0 8px}.lvhex{width:42px;height:47px}.lvhex b{font-size:23px}.ibtn{width:44px;height:44px}
+ .hero{padding:12px 16px 12px;margin-bottom:8px}
+ #hToday{margin:2px 0 0}#hToday b{font-size:62px}#hToday i{font-size:20px}
+ .dbar{margin:22px 0 8px;height:12px}
+ .tgoal{font-size:16px}.tgoal b{font-size:22px}
+ .wk{padding:10px 14px;margin-bottom:8px}
+ .wkhead{min-height:30px;margin-bottom:6px}
+ .streak svg{width:24px;height:30px}.streak .n{font-size:30px}
+ .wd{gap:3px}.wd i{width:28px;height:28px}.wd i svg{width:14px;height:14px}
+ .wkbar{margin-top:8px;padding-top:8px}.wkb{margin-top:6px}
+ .tiles{gap:8px}
+ .tl{min-height:66px;padding:8px 10px 8px 8px;border-radius:18px}.tl .art{width:46px;height:38px}.tl .tv{font-size:24px}
+ .startwrap{flex-direction:row;align-items:stretch;padding-top:10px;gap:8px}
+ .subj{flex-direction:column;justify-content:center;gap:0;padding:0 12px;border-radius:18px;min-height:60px;line-height:1.25}
+ .subj>svg{display:none}
+ .start{flex:1;min-height:60px;font-size:19px;letter-spacing:.03em}
+ .start .pl{width:30px;height:30px}
+ .tsubj{margin-bottom:6px}
+ .tdiff{margin-top:2.5vh}.alive{margin-top:2vh}
+}
 @media (prefers-reduced-motion: reduce){.dg.roll{animation:fadein .3s}.rays{animation:none}.pvf svg,.chest .art,.tl.has .art{animation:none}@keyframes fadein{from{opacity:0}to{opacity:1}}}
 </style>
 </head>
@@ -756,7 +800,7 @@ function renderHome(){
  hb.innerHTML=`<div class="art${nb?'':' dim'}">${chestSVG(topT)}</div><div><div class="tt">宝箱</div><div class="tv n">${nb}</div><div class="ts">${nb?'叩いて割る':`次まで ${60-S.timerCarry}分`}</div></div>${nb?'<span class="badge">割れる</span>':''}`;
  const have=ITEMS.filter(i=>S.owned[i.id]).length;
  $('#hDex').innerHTML=`<div class="art">${DEX_ART}</div><div><div class="tt">図鑑</div><div class="tv n">${have}<small>/${ITEMS.length}</small></div><div class="ts">集めた物</div></div>`;
- $('#hSubj').innerHTML=`${BOOK_SVG}<span class="k">科目</span><span>${S.subj}</span>${CHEV_SVG}`;
+ $('#hSubj').innerHTML=`${BOOK_SVG}<span class="k">科目</span><span class="sv">${S.subj}${CHEV_SVG}</span>`;
 }
 $('#hStart').onclick=()=>{ac();const st=stats(Date.now());S.running={s:Date.now(),subj:S.subj,passed:false,nb:0,base:{todayM:st.todayM,yest:st.yest,carry:S.timerCarry,boxN:S.boxDay.k===st.tk?S.boxDay.n:0}};save();SND.start();hap(1);openTimer();};
 $('#hBox').onclick=()=>{if(S.boxes.length)openBoxes();else toast('宝箱はまだありません（タイマー60分で木箱1つ）');};

@@ -7,4 +7,6 @@
 - `?mute=1` で音を全部止めます。
 - 数字の字（Barlow Condensed）と、iPhone 以外で使う日本語の字（Noto Sans JP）は Google Fonts から読み込みます。
 
+iPhone では Safari の共有ボタン →「ホーム画面に追加」で、上下のバーが無い全画面のアプリとして開けます（記録は Safari で開いた時とは別になります）。
+
 公開ページ: https://ixures5643-dot.github.io/study-reward-test/
