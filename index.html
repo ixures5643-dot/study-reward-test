@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="build" content="20261118-2040">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -1145,6 +1146,20 @@ function demo(kind){
 if(S.running)openTimer();else show('home');
 addEventListener('resize',()=>{if($('#home').classList.contains('on'))fitBig($('#hBig'));});
 document.fonts&&document.fonts.ready.then(()=>{if($('#home').classList.contains('on'))fitBig($('#hBig'));});
+// 新しい版が出ていたら取りに行く（ホーム画面に追加した iPhone は古い写しを使い続けたため・11-18）。公開のたびに meta の build を上げる。
+const BUILD=(document.querySelector('meta[name="build"]')||{}).content||'';
+async function checkUpdate(){
+  if(Q.has('mute')||!BUILD||S.running)return; // 試しの撮影と勉強中は触らない
+  try{
+    const t=await (await fetch('./?u='+Date.now(),{cache:'no-store'})).text();
+    const m=t.match(/<meta name="build" content="([^"]+)"/);
+    if(!m||m[1]===BUILD||sessionStorage.getItem('dpbUpd')===m[1])return;
+    sessionStorage.setItem('dpbUpd',m[1]);
+    location.replace('./?b='+encodeURIComponent(m[1]));
+  }catch(e){}
+}
+checkUpdate();
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&$('#home').classList.contains('on'))checkUpdate();});
 </script>
 </body>
 </html>
