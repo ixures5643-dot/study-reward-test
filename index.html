@@ -10,534 +10,554 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" href="icon-192.png">
-<meta name="theme-color" content="#0A0B1E">
+<meta name="theme-color" content="#07111F">
 <title>勉強タイマー 試作</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,600;0,700;0,800;1,700;1,800;1,900&family=Noto+Sans+JP:wght@500;700;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:ital,wdth,wght@0,62..125,700..900;1,62..125,700..900&family=Dela+Gothic+One&family=Noto+Sans+JP:wght@500;700;900&display=swap" rel="stylesheet">
 <style>
-/* ===== 決まり（DESIGN.md と同じ値） ===== */
+/* ===== 決まり（DESIGN.md 第2版＝C「字と光」と同じ値） ===== */
 :root{
- --bg0:#0A0B1E;--bg1:#121433;--bg2:#1A1D45;--bg3:#262A5E;
- --ink:#F4F5FF;--ink2:#B0B4DA;--ink3:#8A8FBC;
- --line:rgba(150,160,255,.14);
- --t0:#DDE3F0;--blue:#3D9BFF;--purple:#A66BFF;--gold:#FFC635;--green:#3DDC97;
- --fg:var(--ink);--dim:var(--ink2);--card:var(--bg2);
- --num:"Barlow Condensed","Hiragino Sans","Noto Sans JP",sans-serif;
+ --bg:#07111F;--tx:#F4F6FF;--tx2:#B5BFD6;--tx3:#7D88A3;--ol:#06122A;--line:rgba(181,191,214,.16);
+ --t1:#0B56E6;--t2:#7420E6;--t3:#F0A500;--t1l:#7CC4FF;--t2l:#CDA6FF;--t3l:#FFD75E;
+ --g1:#3D9BFF;--g2:#A66BFF;--g3:#FFC635;
+ --fire1:#FF9A3D;--fire2:#FF5A2E;--fire3:#EE2F4E;--fireE:#9E1430;--new:#3DDC97;
+ --num:'Archivo',sans-serif;--head:'Dela Gothic One','Hiragino Sans',sans-serif;
  --jp:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Hiragino Kaku Gothic ProN","Noto Sans JP","Yu Gothic UI",sans-serif;
+ --olsh:3px 0 0 var(--ol),-3px 0 0 var(--ol),0 3px 0 var(--ol),0 -3px 0 var(--ol),2px 2px 0 var(--ol),-2px 2px 0 var(--ol),2px -2px 0 var(--ol),-2px -2px 0 var(--ol),3px 2px 0 var(--ol),-3px 2px 0 var(--ol),3px -2px 0 var(--ol),-3px -2px 0 var(--ol),2px 3px 0 var(--ol),-2px 3px 0 var(--ol),2px -3px 0 var(--ol),-2px -3px 0 var(--ol);
+ --olsh2:2px 0 0 var(--ol),-2px 0 0 var(--ol),0 2px 0 var(--ol),0 -2px 0 var(--ol),2px 2px 0 var(--ol),-2px 2px 0 var(--ol),2px -2px 0 var(--ol),-2px -2px 0 var(--ol);
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 [hidden]{display:none!important}
-html,body{height:100%;background:var(--bg0);color:var(--ink);overflow:hidden}
-body{font-family:var(--jp);font-size:17px;line-height:1.55;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;touch-action:manipulation;font-variant-numeric:tabular-nums;-webkit-font-smoothing:antialiased;
- background:radial-gradient(90% 45% at 0% 0%,rgba(70,90,255,.20),transparent 60%),radial-gradient(80% 45% at 100% 100%,rgba(170,70,255,.16),transparent 60%),var(--bg0)}
+html,body{height:100%;background:var(--bg);color:var(--tx);overflow:hidden}
+body{font-family:var(--jp);font-size:17px;line-height:1.5;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;touch-action:manipulation;font-variant-numeric:tabular-nums;-webkit-font-smoothing:antialiased}
 button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;touch-action:manipulation;text-align:inherit}
 svg{display:block}
-b{font-weight:800}
-.n{font-family:var(--num);font-style:italic;font-weight:800;font-variant-numeric:tabular-nums}
-.up{color:var(--green)!important}
-.scr{position:fixed;inset:0;display:none;flex-direction:column;padding:max(12px,env(safe-area-inset-top)) 16px max(14px,env(safe-area-inset-bottom));overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch}
+img{display:block;-webkit-user-drag:none;pointer-events:none}
+.n{font-family:var(--num);font-style:italic;font-weight:900;font-stretch:75%;font-variant-numeric:tabular-nums}
+.scr{position:fixed;inset:0;display:none;flex-direction:column;padding:max(12px,env(safe-area-inset-top)) 16px max(14px,env(safe-area-inset-bottom));overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;background:var(--bg)}
 .scr.on{display:flex}
-.scr>*,.rwrap>*{flex-shrink:0}
+.scr>*{flex-shrink:0;position:relative}
+/* 絵と光の層＝画面の直下に置く（z-index の親に入れない＝screen 合成が地まで届く） */
+.scr>.lay{position:absolute;pointer-events:none}
+.ghost{top:86px;left:-12px;font-family:var(--num);font-style:italic;font-weight:900;font-stretch:62%;font-size:170px;line-height:.8;color:transparent;-webkit-text-stroke:1.5px rgba(255,255,255,.075);letter-spacing:-.01em;white-space:nowrap}
 
-/* ===== 部品 ===== */
-.panel{position:relative;background:linear-gradient(180deg,#1D2050 0%,#15173B 100%);border:1px solid var(--line);border-radius:24px;box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 12px 28px rgba(0,0,0,.35)}
-.btn{position:relative;display:flex;align-items:center;justify-content:center;gap:10px;min-height:52px;padding:0 18px;border-radius:18px;font-size:17px;font-weight:800;text-align:center;transition:transform .07s ease-out,box-shadow .07s ease-out}
-.btn:active{transform:translateY(4px)}
-.btn-fire{color:#fff;background:linear-gradient(180deg,#FF9A3D 0%,#FF5A2E 48%,#EE2F4E 100%);box-shadow:inset 0 2px 0 rgba(255,255,255,.45),inset 0 -3px 0 rgba(150,10,40,.3),0 6px 0 #9E1430,0 14px 28px rgba(255,80,60,.32);text-shadow:0 2px 0 rgba(130,10,30,.5)}
-.btn-fire:active{box-shadow:inset 0 2px 0 rgba(255,255,255,.35),0 2px 0 #9E1430,0 6px 14px rgba(255,80,60,.28)}
-.btn-gold{color:#3B2300;background:linear-gradient(180deg,#FFF0A8 0%,#FFCF3F 45%,#F5A300 100%);box-shadow:inset 0 2px 0 rgba(255,255,255,.7),inset 0 -3px 0 rgba(160,90,0,.28),0 6px 0 #A86400,0 14px 28px rgba(255,190,40,.28)}
-.btn-gold:active{box-shadow:inset 0 2px 0 rgba(255,255,255,.6),0 2px 0 #A86400,0 6px 14px rgba(255,190,40,.22)}
-.btn-ghost{color:var(--ink);background:linear-gradient(180deg,#282C64,#1D204C);box-shadow:inset 0 1px 0 rgba(255,255,255,.1),0 5px 0 #0C0D26}
-.btn-ghost:active{box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 1px 0 #0C0D26}
-.btn-danger{color:#FF9AA8}
-.ibtn{width:44px;height:44px;flex:none;border-radius:14px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.06);border:1px solid var(--line);color:var(--ink2)}
-.ibtn:active{transform:scale(.94)}
+/* ===== 共通の部品 ===== */
+/* 見出し＝回した和文（斜体にしない） */
+.hd{align-self:flex-start;transform:rotate(-7deg);transform-origin:left center;margin:20px 0 0 2px;--hg:rgba(61,155,255,.45);--hb:linear-gradient(90deg,#38e8ff,#3d9bff,#0b56e6)}
+.hd .t{font-family:var(--head);font-size:33px;line-height:1.12;color:#fff;letter-spacing:.01em;white-space:nowrap;text-shadow:0 3px 0 #0a1a3a,3px 3px 0 #0a1a3a,0 0 18px var(--hg)}
+.hd .bar{margin-top:6px;height:4px;width:var(--bw,190px);background:var(--hb)}
+.hd.k0{--hg:rgba(181,191,214,.25);--hb:linear-gradient(90deg,#b5bfd6,#56607a)}
+.hd.k2{--hg:rgba(166,107,255,.55);--hb:linear-gradient(90deg,#e0c8ff,#a66bff,#7420e6)}
+.hd.k3{--hg:rgba(255,198,53,.6);--hb:linear-gradient(90deg,#fff2a8,#ffc635,#f0a500)}
+.hd.k3 .t{text-shadow:0 3px 0 #3a2000,3px 3px 0 #3a2000,0 0 22px var(--hg)}
+.hd.k4{--hg:rgba(255,198,53,.55);--hb:linear-gradient(90deg,#38e8ff,#7c5cff,#ff4fd8,#ffc635)}
+/* 山の数字＝白＋紺の縁＋段の色の落ち影＋光 */
+.big{align-self:flex-end;display:flex;align-items:baseline;white-space:nowrap;font-size:206px;margin-right:-2px;--dc:#3d9bff;--gc:rgba(61,155,255,.45)}
+.big b{font-family:var(--num);font-style:italic;font-weight:900;font-stretch:62%;line-height:.86;letter-spacing:-.03em;color:#fff;font-variant-numeric:tabular-nums;text-shadow:var(--olsh),4px 8px 0 var(--dc),5px 10px 0 var(--ol),0 0 36px var(--gc)}
+.big i{display:inline-block;font-style:normal;font-family:var(--jp);font-size:.165em;font-weight:900;color:#fff;margin:0 .06em 0 .12em;transform:translateY(-.53em);text-shadow:var(--olsh2),0 4px 0 var(--dc)}
+.big i.pre{margin:0 .24em 0 0}
+.big.k0{--dc:#56607a;--gc:rgba(125,136,163,.22)}
+.big.k2{--dc:#a66bff;--gc:rgba(166,107,255,.5)}
+.big.k3,.big.k4{--dc:#ffc635;--gc:rgba(255,198,53,.55)}
+/* 斜めの3本の帯＝塗った帯は超えた・中が空の帯はまだの目標 */
+.rib{margin:30px -46px 26px;transform:rotate(-7deg)}
+.rb{position:relative;height:50px;margin-bottom:6px;display:flex;align-items:center;padding:0 52px;white-space:nowrap;color:#fff;
+ background:rgba(7,17,31,.72) repeating-linear-gradient(-45deg,rgba(var(--ch),.09) 0 6px,transparent 6px 14px);box-shadow:inset 0 0 0 3px var(--c),0 0 14px rgba(var(--ch),.25);transition:background .15s}
+.rib .rb:nth-child(1){margin-right:46px}
+.rib .rb:nth-child(2){margin-left:22px;margin-right:24px}
+.rib .rb:nth-child(3){margin-left:44px;padding-right:64px;margin-bottom:0}
+.rb.t1{--c:#0b56e6;--cl:#7cc4ff;--ch:11,86,230}
+.rb.t2{--c:#7420e6;--cl:#cda6ff;--ch:116,32,230}
+.rb.t3{--c:#f0a500;--cl:#ffd75e;--ch:240,165,0}
+.rb .fill{position:absolute;left:3px;top:3px;bottom:3px;width:0;max-width:calc(100% - 6px);background:rgba(var(--ch),.3)}
+.rb>span{position:relative}
+.rb .k{font-size:17px;font-weight:900;min-width:86px;color:var(--cl)}
+.rb .k small{font-size:13px;font-weight:700;margin-left:1px}
+.rb .o{font-size:13px;font-weight:700;opacity:.85;flex:1}
+.rb .g{display:flex;align-items:baseline;gap:1px}
+.rb .g i{font-style:normal;font-size:13px;font-weight:700;color:var(--tx2);margin-right:5px}
+.rb .g b{font-family:var(--num);font-style:italic;font-weight:900;font-stretch:75%;font-size:32px;line-height:1}
+.rb .g span{font-size:13px;font-weight:900;margin-right:2px}
+.rb .g em{font-style:normal;font-size:13px;font-weight:700;color:var(--tx3)}
+.rb.off{background:rgba(7,17,31,.5);box-shadow:inset 0 0 0 2px rgba(var(--ch),.32)}
+.rb.off .k{color:var(--tx3)}
+.rb.on{background:var(--c);box-shadow:0 0 24px rgba(var(--ch),.55)}
+.rb.on .fill{display:none}
+.rb.on .k{min-width:52px;color:inherit}
+.rb.on .g b{font-size:36px}
+.rb.on .g span{margin-right:0}
+.rb.t3.on{color:#1d1200}
+.rb.on::after{content:"超え";position:absolute;right:40px;top:-9px;font-size:11px;font-weight:900;line-height:1.5;background:#fff;color:#0a1a3a;padding:1px 6px;border-radius:3px;transform:rotate(7deg)}
+/* 押す所＝斜めの立体（火＝始める・金＝ご褒美を受け取る）／字だけ／枠だけ */
+.btn{position:relative;flex:1;height:64px;transform:skewX(-10deg);border-radius:4px;min-width:0}
+.btn>span{position:absolute;inset:0 0 6px 0;border-radius:4px;display:flex;align-items:center;justify-content:center;gap:10px;transition:top .07s,bottom .07s}
+.btn>span>*{transform:skewX(10deg)}
+.btn:active>span{top:4px;bottom:2px}
+.btn i{font-style:normal;white-space:nowrap}
+.btn.fire{background:var(--fireE);box-shadow:0 0 28px rgba(255,90,46,.45)}
+.btn.fire>span{background:linear-gradient(180deg,#ffb867 0%,var(--fire1) 18%,var(--fire2) 55%,var(--fire3) 100%);box-shadow:inset 0 1px 0 rgba(255,255,255,.75)}
+.btn.fire i{color:#fff;font-size:19px;font-weight:900;letter-spacing:.06em;text-shadow:0 2px 0 rgba(130,10,30,.55)}
+.btn .pl{width:26px;height:26px;border-radius:50%;background:#fff;position:relative;flex:none}
+.btn .pl::after{content:"";position:absolute;left:10px;top:7px;border:6px solid transparent;border-left:9px solid var(--fire2);border-right:0}
+.btn.gold{height:60px;background:#9a5a00;box-shadow:0 0 26px rgba(255,198,53,.3)}
+.btn.gold>span{background:linear-gradient(180deg,#fff2a8 0%,#ffcf3d 45%,#f5a300 100%);box-shadow:inset 0 1px 0 rgba(255,255,255,.85)}
+.btn.gold i{color:#3a2000;font-size:17px;font-weight:900;letter-spacing:.06em}
+.tb{flex:none;min-width:92px;height:56px;display:flex;align-items:center;justify-content:center;padding:0 8px;font-size:15px;font-weight:700;color:var(--tx2);white-space:nowrap}
+.tb:active{opacity:.55}
+.ol{display:flex;align-items:center;justify-content:center;min-height:52px;padding:0 10px;transform:skewX(-10deg);box-shadow:inset 0 0 0 1.5px rgba(181,191,214,.35);background:rgba(7,17,31,.6);font-size:15px;font-weight:700;text-align:center}
+.ol>span{transform:skewX(10deg)}
+.ol:active{background:rgba(124,196,255,.12)}
+.ibtn{width:44px;height:44px;flex:none;display:flex;align-items:center;justify-content:center;color:var(--tx2)}
+.ibtn:active{opacity:.55}
 .ibtn svg{width:22px;height:22px}
-.shard{display:flex;align-items:center;gap:6px;font-size:14px;font-weight:800;color:#CFE4FF;background:rgba(61,155,255,.1);border:1px solid rgba(61,155,255,.35);min-height:34px;padding:0 12px 0 8px;border-radius:999px}
-.shard svg{width:18px;height:18px}
-.shard b{font-family:var(--num);font-style:italic;font-weight:800;font-size:21px;color:#fff;line-height:1}
-.lvtrack{position:relative;height:12px;border-radius:8px;background:#0B0C24;box-shadow:inset 0 1px 2px rgba(0,0,0,.6);overflow:hidden}
-.lvfill{height:100%;width:0;border-radius:8px;background:linear-gradient(90deg,#3B5BFF,#4FB0FF 70%,#8BE3FF);box-shadow:inset 0 2px 0 rgba(255,255,255,.35)}
-.lvhex{position:relative;flex:none;width:50px;height:56px;filter:drop-shadow(0 4px 10px rgba(60,90,255,.45))}
-.lvhex svg{width:100%;height:100%}
-.lvhex b{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:var(--num);font-style:italic;font-weight:900;font-size:27px;color:#fff;text-shadow:0 2px 0 rgba(10,20,90,.6);padding-top:1px}
-.bignum{line-height:1;white-space:nowrap}
-.bignum b{font-family:var(--num);font-style:italic;font-weight:900;letter-spacing:-.005em;padding-right:.04em}
-.bignum i{font-style:normal;font-weight:800;color:var(--ink2);margin:0 6px 0 3px}
+/* 欠片（数だけ・印は仮の◆） */
+.shard{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:700;color:var(--tx2);white-space:nowrap}
+.shard img{width:28px;height:28px;-webkit-mask-image:radial-gradient(closest-side,#000 70%,transparent 100%);mask-image:radial-gradient(closest-side,#000 70%,transparent 100%)}
+.shard .sm{width:12px;height:12px;transform:rotate(45deg);background:linear-gradient(135deg,#e6f6ff,#63bbff 50%,#2f5bff);box-shadow:0 0 8px rgba(99,187,255,.7)}
+.shard b{font-family:var(--num);font-style:italic;font-weight:900;font-stretch:75%;font-size:22px;color:#fff;line-height:1}
+.lb{height:8px;transform:skewX(-14deg);background:#0d1d36;box-shadow:inset 0 1px 2px rgba(0,0,0,.6);overflow:hidden}
+.lb i{display:block;height:100%;width:0;background:linear-gradient(180deg,#9fd6ff,#3d9bff 55%,#0b56e6)}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+@keyframes sheen{from{background-position:120% 0}to{background-position:-120% 0}}
 
 /* ===== ホーム ===== */
-.hhead{display:flex;align-items:center;gap:12px;padding:2px 0 14px}
-.lvcol{flex:1;min-width:0}
-.lvtop{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:13px;font-weight:700;color:var(--ink2);margin-bottom:6px;white-space:nowrap}
-.lvtop .k{font-weight:800;color:var(--ink);letter-spacing:.06em}
-.lvtop b{font-family:var(--num);font-style:italic;font-size:17px;color:#9CC8FF}
-.hero{padding:16px 20px 18px;margin-bottom:12px;overflow:hidden}
-.hero::before{content:"";position:absolute;right:-70px;top:-80px;width:240px;height:240px;border-radius:50%;background:radial-gradient(circle,rgba(61,155,255,.22),transparent 65%);pointer-events:none}
-.hlabel{display:flex;justify-content:space-between;align-items:center;font-size:15px;font-weight:800;color:var(--ink2)}
-.hdate{font-size:13px;font-weight:700;color:var(--ink3)}
-#hToday{margin:8px 0 4px}
-#hToday b{font-size:92px;background:linear-gradient(180deg,#FFFFFF 35%,#BFD0FF);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 4px 0 rgba(5,6,30,.5))}
-#hToday i{font-size:24px}
-.dbar{position:relative;height:14px;border-radius:9px;background:#0B0C24;box-shadow:inset 0 1px 2px rgba(0,0,0,.6);margin:30px 0 12px}
-.dfill{position:absolute;left:0;top:0;bottom:0;width:0;border-radius:9px;background:linear-gradient(90deg,#2F6BFF,#3D9BFF 60%,#7CC8FF);box-shadow:inset 0 2px 0 rgba(255,255,255,.35),0 0 14px rgba(61,155,255,.45)}
-.dline{position:absolute;top:-7px;bottom:-7px;width:3px;margin-left:-1.5px;border-radius:2px;background:#fff;box-shadow:0 0 8px rgba(255,255,255,.7)}
-.dline span{position:absolute;bottom:calc(100% + 4px);left:50%;transform:translateX(-50%);font-size:12px;font-weight:800;color:var(--ink2);white-space:nowrap}
-.dline.l span{left:-2px;transform:none}.dline.r span{left:auto;right:-2px;transform:none}
-.tgoal{font-size:17px;font-weight:700}
-.tgoal b{font-family:var(--num);font-style:italic;font-weight:800;font-size:25px;color:#7CC4FF;margin:0 2px}
-.wk{padding:14px 16px 14px;margin-bottom:12px}
-.wkhead{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px;min-height:40px}
-.streak{display:flex;align-items:center;gap:6px;font-size:16px;font-weight:800;white-space:nowrap}
-.streak svg{width:30px;height:37px;filter:drop-shadow(0 0 8px rgba(255,110,40,.55))}
-.streak .n{font-size:36px;line-height:1;color:#FFB15C;margin:0 1px 0 2px}
-.streak .z{font-size:15px;color:var(--ink2)}
-.ticket{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:700;color:var(--ink2);white-space:nowrap}
-.ticket svg{width:26px;height:18px}
-.ticket b{font-family:var(--num);font-style:italic;font-size:19px;color:#7FF0C4}
-.week{display:flex;justify-content:space-between}
-.wd{display:flex;flex-direction:column;align-items:center;gap:5px;font-size:12px;font-weight:800;color:var(--ink3)}
-.wd i{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#0E1030;border:2px solid #2A2E66}
-.wd.fut i{background:none;border-style:dashed;border-color:#2A2E66}
-.wd.done i{background:linear-gradient(180deg,#FFB03A,#FF5A2E);border-color:#FFC56B;box-shadow:0 0 12px rgba(255,120,40,.5),inset 0 2px 0 rgba(255,255,255,.35)}
-.wd i svg{width:16px;height:16px}
-.wd.now{color:var(--ink)}
-.wd.now i{border-color:#fff;box-shadow:0 0 0 3px rgba(255,255,255,.12)}
-.wd.done.now i{border-color:#fff;box-shadow:0 0 0 3px rgba(255,255,255,.14),0 0 14px rgba(255,120,40,.6)}
-.wkbar{margin-top:14px;padding-top:12px;border-top:1px solid var(--line)}
-.wkt{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:13px;font-weight:700;color:var(--ink2);white-space:nowrap}
-.wkt b{font-family:var(--num);font-style:italic;font-weight:800;font-size:19px;color:#fff}
-.wkt .k b{font-size:17px;color:#CDA6FF}
-.wkt em{font-style:normal;color:#CDA6FF;font-weight:900}
-.wkb{position:relative;height:8px;border-radius:6px;background:#0B0C24;box-shadow:inset 0 1px 2px rgba(0,0,0,.6);margin-top:8px}
-.wkb i{position:absolute;left:0;top:0;bottom:0;border-radius:6px;background:linear-gradient(90deg,#6A2FE0,#A66BFF 70%,#D9BCFF);box-shadow:inset 0 1px 0 rgba(255,255,255,.3)}
-.wkb u{position:absolute;top:-4px;bottom:-4px;width:2px;margin-left:-1px;border-radius:1px;background:#fff}
-.tiles{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px}
-.tl{display:flex;align-items:center;gap:10px;min-height:92px;padding:12px 12px 12px 10px;border-radius:22px;transition:transform .08s}
-.tl:active{transform:scale(.97)}
-.tl .art{width:60px;height:50px;flex:none}
-.tl .art svg{width:100%;height:100%;overflow:visible}
-.tl .art.dim{filter:grayscale(1) brightness(.75);opacity:.55}
-.tl .tt{font-size:14px;font-weight:800;color:var(--ink2);line-height:1.2}
-.tl .tv{font-size:30px;line-height:1.05}
-.tl .tv small{font-size:16px;color:var(--ink3);margin-left:2px}
-.tl .ts{font-size:12px;color:var(--ink3);font-weight:700;line-height:1.3;white-space:nowrap}
-.tl.has{border-color:rgba(255,198,53,.6);box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 0 22px rgba(255,198,53,.2),0 12px 28px rgba(0,0,0,.35)}
-.tl.has .ts{color:#FFD86B}
-.tl.has .art{animation:bob 2.4s ease-in-out infinite}
-.badge{position:absolute;top:-9px;right:-4px;background:linear-gradient(180deg,#FF6A3D,#E8304A);color:#fff;font-size:12px;font-weight:900;padding:2px 9px;border-radius:999px;box-shadow:0 3px 0 #8E1028}
-@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
-.startwrap{margin-top:auto;padding-top:16px;display:flex;flex-direction:column;gap:12px}
-.subj{align-self:center;display:flex;align-items:center;gap:8px;min-height:44px;padding:0 14px 0 14px;border-radius:999px;background:rgba(255,255,255,.06);border:1px solid var(--line);font-size:16px;font-weight:800}
-.subj:active{transform:scale(.96)}
-.subj svg{width:18px;height:18px;color:var(--ink2)}
-.subj .k{color:var(--ink3);font-size:13px;font-weight:700}
-.subj .sv{display:flex;align-items:center;gap:6px}
-.subj .sv svg{width:16px;height:16px}
-.start{min-height:68px;border-radius:22px;font-size:21px;font-weight:900;letter-spacing:.06em}
-.start .pl{width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.24);display:flex;align-items:center;justify-content:center;box-shadow:inset 0 1px 0 rgba(255,255,255,.45)}
-.start .pl svg{width:14px;height:14px;margin-left:3px}
+.ember{left:0;right:0;bottom:0;height:520px;background:url(art/c-ember.webp) center bottom/cover no-repeat;opacity:.9;-webkit-mask-image:linear-gradient(180deg,transparent 0%,#000 45%);mask-image:linear-gradient(180deg,transparent 0%,#000 45%)}
+.hglow{left:-40px;right:-60px;top:90px;height:330px;background:radial-gradient(closest-side at 62% 52%,rgba(var(--hc,40,120,255),.40),rgba(var(--hc,40,120,255),.12) 55%,transparent 100%)}
+.htop{display:flex;align-items:center;gap:8px;min-height:44px}
+.tday{flex:1;font-size:15px;font-weight:700;white-space:nowrap}
+.tday span{margin-left:8px}
+.tday em{font-family:var(--num);font-style:italic;font-weight:900;font-stretch:75%;font-size:22px;margin:0 1px}
+.hdate{font-size:13px;font-weight:500;color:var(--tx2);white-space:nowrap}
+#hHd{margin-top:14px}
+#hBig{margin-top:2px}
+.rw{display:flex;align-items:center;gap:4px;min-height:110px}
+.fl{width:110px;height:110px;flex:none;position:relative}
+.fl img{position:absolute;left:-12px;top:-12px;width:134px;height:134px;mix-blend-mode:screen}
+.fl.dim img{filter:grayscale(1) brightness(.6)}
+.rwt{flex:1;min-width:0}
+.sn{display:flex;align-items:baseline;gap:4px;min-height:52px}
+.sn em{font-family:var(--num);font-style:italic;font-weight:900;font-stretch:75%;font-size:58px;line-height:.9;color:#fff;text-shadow:var(--olsh2),3px 5px 0 var(--fire2)}
+.sn b{font-size:20px;font-weight:900}
+.sn .z{font-size:17px;font-weight:700;color:var(--tx)}
+.sg{margin-top:2px;display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:15px;font-weight:700;color:var(--fire1);white-space:nowrap}
+.sg span{font-size:13px;font-weight:500;color:var(--tx3)}
+.lvl{margin-top:10px;display:flex;justify-content:space-between;align-items:baseline;font-size:13px;font-weight:500;color:var(--tx3);white-space:nowrap}
+.lvl>b{color:var(--tx);font-weight:900;font-size:15px}
+.lvl>b em{font-family:var(--num);font-style:italic;font-weight:900;font-stretch:75%;font-size:20px;margin-left:3px}
+.lvl span b{color:var(--tx2);font-size:13px;font-weight:700}
+.rwt .lb{margin-top:6px}
+.tiles{display:flex;gap:14px;margin:12px 4px 0}
+.tl{flex:1;min-width:0;height:56px;display:flex;align-items:center;gap:6px;padding:0 14px 0 6px;transform:skewX(-10deg);box-shadow:inset 0 0 0 1.5px rgba(181,191,214,.28);background:rgba(7,17,31,.6)}
+.tl>*{transform:skewX(10deg)}
+.tl:active{background:rgba(124,196,255,.1)}
+.tl .ti{width:48px;height:48px;flex:none}
+.tl .ti img{width:48px;height:48px;-webkit-mask-image:radial-gradient(closest-side,#000 72%,transparent 100%);mask-image:radial-gradient(closest-side,#000 72%,transparent 100%)}
+.tl .ti.dim img{filter:grayscale(1) brightness(.55)}
+.tl .tc{display:flex;flex-direction:column;line-height:1.25;min-width:0}
+.tl .tt{font-size:15px;font-weight:700}
+.tl .ts{font-size:11px;font-weight:700;color:var(--tx3);white-space:nowrap}
+.tl .tv{margin-left:auto;font-family:var(--num);font-style:italic;font-weight:900;font-stretch:75%;font-size:28px;line-height:1;color:#fff}
+.tl .tv small{font-size:15px;color:var(--tx3);margin-left:1px}
+.tl.has{box-shadow:inset 0 0 0 2px var(--g3),0 0 18px rgba(255,198,53,.32)}
+.tl.has .ts{color:var(--t3l)}
+.tl.has .ti img{animation:bob 2.4s ease-in-out infinite}
+.tl .badge{position:absolute;top:-10px;right:10px;background:var(--g3);color:#3a2000;font-size:11px;font-weight:900;line-height:1.5;padding:1px 8px}
+.act{margin-top:auto;padding-top:14px;display:flex;align-items:center;gap:14px}
+.sub{width:96px;height:58px;flex:none;display:flex;flex-direction:column;align-items:center;justify-content:center;transform:skewX(-10deg);box-shadow:inset 0 0 0 1.5px rgba(181,191,214,.35);background:rgba(7,17,31,.6)}
+.sub>*{transform:skewX(10deg)}
+.sub:active{background:rgba(124,196,255,.12)}
+.sub small{font-size:11px;font-weight:700;color:var(--tx3);line-height:1.2}
+.sub b{font-size:17px;font-weight:900;line-height:1.3;max-width:84px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sub b::after{content:"";display:inline-block;margin-left:5px;vertical-align:3px;border:5px solid transparent;border-top:6px solid var(--tx2);border-bottom:0}
 
-/* ===== タイマー中（静か） ===== */
+/* ===== タイマー中（静か＝光るのは「昨日」の帯だけ・動きは分単位） ===== */
 #timer{--tfg:#EEF0FF;--tac:#3D9BFF;color:var(--tfg);align-items:center;transition:background .6s}
-.tsubj{margin-top:max(2vh,6px);margin-bottom:12px;display:flex;align-items:center;gap:6px;min-height:34px;padding:0 14px;border-radius:999px;background:rgba(255,255,255,.07);font-size:15px;font-weight:800;opacity:.8}
-.tsubj svg{width:16px;height:16px}
-.ringwrap{position:relative;width:min(82vw,316px,44vh);aspect-ratio:1;margin-top:auto;flex:none}
-.tring{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
-.tring .trk{fill:none;stroke:rgba(255,255,255,.07);stroke-width:14}
-.tring .tfl{fill:none;stroke:var(--tac);stroke-width:14;stroke-linecap:round;opacity:.9;transition:stroke-dashoffset 1s ease-out}
-.tring .tmk{stroke:var(--tfg);stroke-width:4;stroke-linecap:round;opacity:.85}
-.ringwrap.noref .tfl,.ringwrap.noref .tmk{display:none}
-.ringwrap.glow .tfl{animation:tglow 2.4s ease-out}
-@keyframes tglow{0%{stroke-width:14;opacity:.9}18%{stroke-width:24;opacity:1}100%{stroke-width:14;opacity:.9}}
-.tcenter{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
-.tlab{font-size:13px;font-weight:800;opacity:.55;letter-spacing:.14em}
-.clock{font-family:var(--num);font-weight:700;line-height:1;white-space:nowrap;margin:2px 0 8px}
-.clock .dg{display:inline-block;font-size:min(104px,14vh)}
-.clock:has(i+.dg) .dg{font-size:min(86px,11.5vh)}
-.clock i{font-family:var(--jp);font-style:normal;font-size:22px;opacity:.6;margin:0 6px 0 3px;font-weight:800}
+.tsubj{margin-top:max(2vh,6px);display:flex;align-items:center;justify-content:center;min-width:88px;height:34px;padding:0 16px;transform:skewX(-10deg);box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--tfg) 30%,transparent);font-size:15px;font-weight:700;opacity:.85}
+.tsubj span{transform:skewX(10deg)}
+.tmain{margin-top:auto;display:flex;flex-direction:column;align-items:center}
+.tlab{font-size:13px;font-weight:700;opacity:.6;letter-spacing:.14em}
+.clock{display:flex;align-items:baseline;font-family:var(--num);font-weight:800;font-stretch:75%;line-height:1;white-space:nowrap;margin:8px 0 6px}
+.clock .dg{display:inline-block;font-size:min(150px,18vh)}
+.clock:has(i+.dg) .dg{font-size:min(118px,14.5vh)}
+.clock i{font-family:var(--jp);font-style:normal;font-size:24px;opacity:.65;margin:0 6px 0 5px;font-weight:700}
 .dg.roll{animation:roll .5s cubic-bezier(.2,.8,.3,1)}
 @keyframes roll{from{transform:translateY(45%);opacity:0}to{transform:none;opacity:1}}
-.tcap{font-size:14px;font-weight:700;opacity:.55}
-.tdiff{margin-top:4vh;font-size:18px;font-weight:800;opacity:.92}
-.tdiff b{font-family:var(--num);font-style:italic;font-weight:800;font-size:25px;color:var(--tac);margin:0 2px}
-.alive{display:flex;align-items:center;gap:8px;margin-top:3vh;font-size:14px;font-weight:700;opacity:.55}
-.alive .dot{width:9px;height:9px;border-radius:50%;background:var(--tac);animation:breathe 3.9s ease-in-out infinite}
+.tcap{font-size:15px;font-weight:500;opacity:.6}
+.trib{align-self:stretch;margin:46px -46px 0;transform:rotate(-7deg)}
+.trib.noref{display:none}
+.trib .rb{margin:0 30px 0 0;--c:var(--tac);color:var(--tfg);background:rgba(0,0,0,.22) repeating-linear-gradient(-45deg,color-mix(in srgb,var(--tac) 10%,transparent) 0 6px,transparent 6px 14px);box-shadow:inset 0 0 0 3px color-mix(in srgb,var(--tac) 85%,#000)}
+.trib .rb .fill{background:color-mix(in srgb,var(--tac) 42%,transparent)}
+.trib .rb .k{color:var(--tfg)}
+.trib .rb .g i{color:inherit;opacity:.7}
+.trib .rb.on{background:color-mix(in srgb,var(--tac) 72%,#000);box-shadow:0 0 18px color-mix(in srgb,var(--tac) 45%,transparent);color:#fff}
+.trib .rb.on::after{display:none}
+.trib.glow .rb{animation:tglow 2.4s ease-out}
+@keyframes tglow{0%{filter:brightness(1)}18%{filter:brightness(1.7)}100%{filter:brightness(1)}}
+.tdiff{margin-top:26px;font-size:15px;font-weight:700;opacity:.8;text-align:center;min-height:1px}
+.alive{display:flex;align-items:center;gap:8px;margin-top:20px;font-size:13px;font-weight:700;opacity:.55}
+.alive .dot{width:8px;height:8px;border-radius:50%;background:var(--tac);animation:breathe 3.9s ease-in-out infinite}
 @keyframes breathe{0%{opacity:.25}41%{opacity:1}100%{opacity:.25}}
-.tboxw{display:flex;align-items:center;gap:8px;margin-top:10px;font-size:14px;font-weight:700;opacity:.6}
-.tboxw .ic{width:26px;height:21px}
-.tboxw .ic svg{width:100%;height:100%;overflow:visible}
-.hold{position:relative;margin-top:auto;margin-bottom:2px;display:flex;flex-direction:column;align-items:center;gap:6px;color:var(--tfg);opacity:.8}
+.tboxw{display:flex;align-items:center;gap:6px;margin-top:10px;font-size:13px;font-weight:700;opacity:.65}
+.tboxw img{width:30px;height:30px}
+.hold{margin-top:auto;margin-bottom:2px;display:flex;flex-direction:column;align-items:center;gap:6px;color:var(--tfg);opacity:.8}
 .hold svg{width:76px;height:76px;transition:transform .15s}
 .hold .ringbg{stroke:rgba(255,255,255,.16)}
 .hold .ringfg{stroke:var(--tfg);transition:none}
-.hold span{font-size:14px;font-weight:800}
+.hold span{font-size:13px;font-weight:700}
 .hold.holding{opacity:1}
 .hold.holding svg{transform:scale(1.08)}
-.spd{position:absolute;top:max(10px,env(safe-area-inset-top));right:12px;font-size:12px;opacity:.5}
+#tSpd{position:absolute;top:max(10px,env(safe-area-inset-top));right:12px;font-size:11px;opacity:.5}
 #timer.gold .dg{background:linear-gradient(100deg,#e0a100 20%,#fff1b8 45%,#e0a100 70%);background-size:220% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:sheen 7s linear infinite}
 #timer.gold .dg.roll{animation:roll .5s cubic-bezier(.2,.8,.3,1),sheen 7s linear infinite}
-@keyframes sheen{from{background-position:120% 0}to{background-position:-120% 0}}
 
-/* ===== 結果発表（うるさい） ===== */
-#result{align-items:stretch;background:radial-gradient(120% 55% at 50% 14%,#1F2460 0%,#0A0B1E 62%)}
-.edge{position:fixed;inset:0;pointer-events:none;opacity:0}
-.rwrap{position:relative;z-index:1;display:flex;flex-direction:column;gap:10px;padding-bottom:4px;min-height:100%}
-.rdemo{align-self:center;font-size:12px;font-weight:800;color:#FFD27A;background:rgba(255,198,53,.1);border:1px solid rgba(255,198,53,.4);border-radius:999px;padding:3px 12px}
-.rttl{text-align:center;font-size:13px;font-weight:900;color:var(--ink2);letter-spacing:.24em;margin-top:2px}
-.rcard{position:relative;z-index:1;align-self:center;min-width:74%;padding:12px 22px 10px;border-radius:26px;background:linear-gradient(180deg,#262B68,#171A44);border:2px solid rgba(160,170,255,.22);text-align:center;transition:box-shadow .4s}
-.rnum b{font-size:74px;color:#fff;text-shadow:0 4px 0 rgba(5,6,30,.55)}
-.rnum i{font-size:22px}
-.chips{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;min-height:32px}
-.chip{font-size:14px;font-weight:800;padding:5px 12px;border-radius:999px;background:#1C1F4A;border:1px solid var(--line);white-space:nowrap;box-shadow:inset 0 1px 0 rgba(255,255,255,.06)}
-.chip.hot{border-color:rgba(61,155,255,.7);color:#D6E8FF;background:rgba(61,155,255,.16)}
-.chip.xp{color:#C6D3FF}
-.bars{display:flex;flex-direction:column;gap:16px;padding:20px 16px 14px;border-radius:22px}
-.brow{display:grid;grid-template-columns:40px 1fr auto;align-items:center;gap:10px}
-.bl{font-size:15px;font-weight:800;color:var(--ink2)}
-.bt{position:relative;height:14px;border-radius:9px;background:#0B0C24;box-shadow:inset 0 1px 2px rgba(0,0,0,.6)}
-.bf{position:absolute;left:0;top:0;bottom:0;width:0;border-radius:9px;background:linear-gradient(90deg,#4A5088,#7C83B8);box-shadow:inset 0 2px 0 rgba(255,255,255,.22)}
-.bk{position:absolute;top:-7px;bottom:-7px;width:3px;margin-left:-1.5px;border-radius:2px;background:#fff;box-shadow:0 0 6px rgba(255,255,255,.6)}
-.bk.dash{background:none;border-left:2px dashed #9AA6D0;width:0;margin-left:-1px;box-shadow:none}
-.bk.dash::after{content:"平均";position:absolute;top:-19px;left:-12px;font-size:11px;font-weight:800;color:#9AA6D0;white-space:nowrap}
-.br{font-size:15px;font-weight:800;color:var(--ink2);text-align:right;white-space:nowrap;min-width:94px}
-.brow.t1 .bf{background:linear-gradient(90deg,#2F6BFF,#3D9BFF 60%,#8BD0FF);box-shadow:inset 0 2px 0 rgba(255,255,255,.35),0 0 14px rgba(61,155,255,.6)}
-.brow.t2 .bf{background:linear-gradient(90deg,#6A2FE0,#A66BFF 60%,#D9BCFF);box-shadow:inset 0 2px 0 rgba(255,255,255,.35),0 0 14px rgba(166,107,255,.6)}
-.brow.t3 .bf{background:linear-gradient(90deg,#E08A00,#FFC635 60%,#FFF0A0);box-shadow:inset 0 2px 0 rgba(255,255,255,.45),0 0 16px rgba(255,198,53,.65)}
-.brow.t1 .br{color:#7CC4FF}.brow.t2 .br{color:#CDA6FF}.brow.t3 .br{color:var(--gold)}
-.brow.off{opacity:.45}
+/* ===== 結果発表（山の瞬間だけうるさい） ===== */
+#result{align-items:stretch}
+.rart{left:-90px;right:-90px;top:-30px;height:540px;background:center/contain no-repeat;opacity:0;mix-blend-mode:screen;-webkit-mask-image:radial-gradient(closest-side,#000 55%,transparent 100%);mask-image:radial-gradient(closest-side,#000 55%,transparent 100%)}
+#rEdge{position:fixed;inset:0;opacity:0}
+#flameCv{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:0}
+.rwrap{z-index:1;display:flex;flex-direction:column;min-height:100%}
+.rtop{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:4px 8px;min-height:28px}
+.rtop>b{font-size:15px;font-weight:700}
+.rdemo{font-size:11px;font-weight:700;color:var(--t3l);box-shadow:inset 0 0 0 1px rgba(255,198,53,.5);padding:1px 8px}
+.chips{display:flex;flex-wrap:wrap;justify-content:flex-end;align-items:center;gap:4px 8px}
+.chip{font-size:13px;font-weight:700;color:var(--tx2);white-space:nowrap}
+.chip i{display:inline-block;font-style:normal}
+.chip.hot{color:#fff;background:var(--t1);padding:1px 10px;transform:skewX(-10deg)}
+.chip.hot i{transform:skewX(10deg)}
+#rHd{margin-top:24px;opacity:0}
+#rHd .t{font-size:44px}
+.rcw{align-self:flex-end;margin-top:4px}
+#rNum{font-size:196px}
+#rRib{margin-top:28px}
+.rw2{display:flex;align-items:center;gap:10px;margin:2px -6px 0 -8px;min-height:136px}
+.chs{position:relative;width:160px;height:132px;flex:none}
+.chs img{position:absolute;filter:drop-shadow(0 8px 10px rgba(0,0,0,.5))}
+.chs img.fl2{filter:none;-webkit-mask-image:radial-gradient(closest-side,#000 70%,transparent 100%);mask-image:radial-gradient(closest-side,#000 70%,transparent 100%)}
+.rwt2{flex:1;min-width:0}
+.bn{display:flex;align-items:baseline;gap:6px}
+.bn b{font-size:15px;font-weight:700;color:var(--tx2)}
+.bn em{font-family:var(--num);font-style:italic;font-weight:900;font-stretch:75%;font-size:46px;line-height:1;color:#fff}
+.bm{display:flex;flex-wrap:wrap;gap:4px 6px;margin-top:4px;font-size:13px;font-weight:500;color:var(--tx3)}
+.bt{display:inline-block;font-size:11px;font-weight:900;line-height:1.6;padding:0 8px;transform:skewX(-10deg);color:#fff}
+.bt i{display:inline-block;font-style:normal;transform:skewX(10deg)}
+.bt.b0{background:#4a5873}.bt.b1{background:var(--t1)}.bt.b2{background:var(--t2)}.bt.b3{background:var(--t3);color:#1d1200}
+#rLvSec{margin-top:10px}
+#rLvSec .lvl{margin-top:0}
+#rLvSec .lb{margin-top:6px}
+#rLvMsg.up{color:var(--t1l);font-weight:900;font-size:15px}
+.why{display:flex;flex-wrap:wrap;gap:2px 8px;margin-top:6px;min-height:18px}
+.chip.xp{font-size:11px;font-weight:700;color:var(--tx3)}
+.rnext{margin-top:8px;font-size:13px;font-weight:500;color:var(--tx2);line-height:1.7}
+.rnext b{font-family:var(--num);font-style:italic;font-weight:900;font-stretch:75%;font-size:18px;color:#fff;margin:0 2px}
+.rnext .win{color:var(--fire1);font-weight:700}
+.rbtns{position:sticky;bottom:0;z-index:3;display:flex;gap:12px;align-items:center;margin-top:auto;padding-top:14px;background:linear-gradient(rgba(7,17,31,0),var(--bg) 40%)}
 .sec{opacity:0;transform:translateY(8px);transition:opacity .3s,transform .3s}
 .sec.on{opacity:1;transform:none}
-.rlv{padding:12px 16px 6px;border-radius:22px}
-.lvline{display:flex;align-items:center;gap:12px}
-.lvn{min-width:80px;font-size:16px;font-weight:900}
-.lvline .lvtrack{flex:1;height:14px}
-.lvmsg{text-align:center;font-size:15px;font-weight:800;color:#9CC2FF;min-height:24px;margin-top:4px}
-.boxrow{display:flex;justify-content:center;gap:8px;min-height:46px;flex-wrap:wrap}
-.boxrow:empty{display:none}
-.mini{width:56px;height:45px;position:relative;filter:drop-shadow(0 4px 6px rgba(0,0,0,.45))}
-.mini svg{width:100%;height:100%;overflow:visible}
-.boxmsg{text-align:center;font-size:15px;font-weight:700;color:var(--ink2);margin:4px 0 0}
-#rNext{display:flex;flex-direction:column;gap:4px;font-size:15px;font-weight:700;padding:12px 16px;border-radius:22px;line-height:1.5}
-#rNext>div{position:relative;padding-left:18px}
-#rNext>div::before{content:"";position:absolute;left:1px;top:.62em;width:8px;height:8px;border-radius:2px;transform:rotate(45deg);background:var(--blue)}
-#rNext b{font-family:var(--num);font-style:italic;font-weight:800;font-size:19px;color:#7CC4FF;margin:0 1px}
-#rNext .win{color:var(--gold)}
-.rbtns{position:sticky;bottom:0;z-index:3;display:flex;gap:10px;margin-top:auto;padding-top:14px;background:linear-gradient(rgba(10,11,30,0),#0A0B1E 45%)}
-.rbtns .btn-ghost{flex:0 0 36%}
-.rbtns .btn-gold{flex:1;font-size:19px;font-weight:900;min-height:56px}
-.rbtns .btn-ghost{min-height:56px}
-.stamp{position:fixed;left:50%;top:50%;z-index:5;transform:translate(-50%,-50%);font-family:var(--jp);font-size:44px;font-weight:900;letter-spacing:.06em;line-height:1.25;white-space:nowrap;pointer-events:none;opacity:0;padding:4px 22px 6px;border:5px solid currentColor;border-radius:18px;background:rgba(10,11,30,.78);text-shadow:0 3px 0 rgba(0,0,0,.55),0 0 22px currentColor;box-shadow:0 0 34px color-mix(in srgb,currentColor 55%,transparent),inset 0 0 20px color-mix(in srgb,currentColor 35%,transparent)}
-.stamp.rb{color:transparent!important;background:linear-gradient(90deg,#ff5f6d,#ffc371,#fff36b,#5ef08a,#5ec8ff,#b07cff,#ff5f6d);background-size:200% 100%;-webkit-background-clip:text;background-clip:text;border-color:#FFC635;text-shadow:none;box-shadow:0 0 44px rgba(255,198,53,.65),inset 0 0 24px rgba(255,198,53,.35);animation:sheen 1.6s linear infinite}
-.tapnote{position:fixed;bottom:max(10px,env(safe-area-inset-bottom));left:0;right:0;text-align:center;font-size:12px;font-weight:700;color:#5E6494;pointer-events:none}
+.sec:not(.on){pointer-events:none}
+.tapnote{position:fixed;bottom:max(10px,env(safe-area-inset-bottom));left:0;right:0;text-align:center;font-size:11px;font-weight:700;color:var(--tx3);pointer-events:none}
 
 /* ===== 宝箱 ===== */
-#box{align-items:center;background:radial-gradient(90% 55% at 50% 45%,#242A72 0%,#0A0B1E 70%)}
-.xtop{width:100%;display:flex;justify-content:space-between;align-items:center}
-.xleft{font-size:14px;font-weight:800;color:var(--ink2);background:rgba(255,255,255,.06);border:1px solid var(--line);min-height:34px;display:flex;align-items:center;padding:0 14px;border-radius:999px}
-.xarea{position:relative;flex:1;width:100%;display:flex;align-items:center;justify-content:center;min-height:360px}
-.rays{position:absolute;width:560px;height:560px;left:50%;top:50%;margin:-280px 0 0 -280px;opacity:0;pointer-events:none;background:repeating-conic-gradient(from 0deg,var(--rc,#fff) 0deg 7deg,transparent 7deg 22deg);-webkit-mask:radial-gradient(circle,#000 0 18%,transparent 62%);mask:radial-gradient(circle,#000 0 18%,transparent 62%);animation:spin 14s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
-.chest{position:relative;width:min(64vw,250px);aspect-ratio:200/160;cursor:pointer;z-index:2}
-.chest::before{content:"";position:absolute;left:-30%;right:-30%;top:-40%;bottom:-40%;border-radius:50%;background:radial-gradient(closest-side,var(--halo,transparent),transparent);z-index:-1;pointer-events:none}
-.chest::after{content:"";position:absolute;left:8%;right:8%;bottom:-9%;height:14%;border-radius:50%;background:radial-gradient(closest-side,rgba(0,0,0,.6),transparent);z-index:-1}
-.chest.t1{--halo:rgba(61,155,255,.32)}.chest.t2{--halo:rgba(166,107,255,.36)}.chest.t3{--halo:rgba(255,198,53,.42)}
+#box{align-items:stretch}
+.xart{left:-150px;right:-150px;top:40px;height:min(660px,calc(100% - 50px));background:center/contain no-repeat;mix-blend-mode:screen;opacity:0;-webkit-mask-image:radial-gradient(closest-side,#000 60%,transparent 100%);mask-image:radial-gradient(closest-side,#000 60%,transparent 100%)}
+.xhalo{left:20px;right:20px;top:170px;height:360px;opacity:0;background:radial-gradient(closest-side,var(--halo,rgba(61,155,255,.3)),transparent 100%);transition:opacity .4s}
+.xwrap{display:flex;flex-direction:column;flex:1;min-height:100%}
+.xtop{display:flex;align-items:center;gap:10px;min-height:44px}
+.xtop>b{font-size:15px;font-weight:700}
+.xleft{flex:1;font-size:13px;font-weight:500;color:var(--tx2);white-space:nowrap}
+.xleft em{font-family:var(--num);font-style:italic;font-weight:900;font-stretch:75%;font-size:20px;color:#fff;margin:0 1px 0 4px}
+#xHd{margin-top:14px}
+#xHd .t{font-size:44px}
+.xarea{position:relative;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:360px;margin:0 -16px}
+.chest{position:relative;width:min(70vw,270px);aspect-ratio:1;cursor:pointer}
 .chest .art{position:absolute;inset:0;animation:bob 2.6s ease-in-out infinite}
-.chest .art svg{width:100%;height:100%;overflow:visible}
+.chest .art img{width:100%;height:100%;filter:drop-shadow(0 18px 16px rgba(0,0,0,.55))}
 .cracks{position:absolute;inset:0;width:100%;height:100%;z-index:3;pointer-events:none;overflow:visible}
 .cracks polyline{fill:none;stroke:#fff;stroke-width:3;stroke-linejoin:round;stroke-linecap:round}
-.cglow{position:absolute;inset:10%;border-radius:24px;z-index:2;opacity:0;pointer-events:none;transition:opacity .25s;mix-blend-mode:screen}
-.pips{position:absolute;top:calc(50% + min(26vw,100px) + 22px);left:0;right:0;display:flex;justify-content:center;gap:10px;pointer-events:none}
-.pips i{width:14px;height:14px;border-radius:50%;background:#0E1030;border:2px solid #3A408A}
-.pips i.on{background:#fff;border-color:#fff;box-shadow:0 0 10px #fff}
-.xhint{position:absolute;top:calc(50% + min(26vw,100px) + 50px);left:0;right:0;text-align:center;color:var(--ink2);font-size:16px;font-weight:800;pointer-events:none}
-.card{position:absolute;z-index:4;width:min(80vw,310px);padding:22px 18px 18px;border-radius:26px;background:linear-gradient(180deg,#23275C,#14163A);border:2px solid var(--rc);box-shadow:0 0 0 4px rgba(0,0,0,.25),0 0 50px color-mix(in srgb,var(--rc) 50%,transparent),inset 0 1px 0 rgba(255,255,255,.12);text-align:center;display:none;overflow:hidden}
-.card::before{content:"";position:absolute;inset:0;background:radial-gradient(90% 45% at 50% 0%,color-mix(in srgb,var(--rc) 32%,transparent),transparent 70%);pointer-events:none}
-.card.on{display:block}
-.card>*{position:relative}
-.card .cr{display:inline-block;font-size:13px;font-weight:900;color:#0A0B1E;background:var(--rc);border-radius:999px;padding:2px 14px;letter-spacing:.1em}
-.card .cn{font-size:30px;font-weight:900;margin:10px 0 0;line-height:1.25}
-.card .ct{font-size:14px;color:var(--ink2);font-weight:700}
-.card .cpv{margin:14px auto 4px;display:flex;justify-content:center}
-.card .cs{font-size:16px;margin-top:8px;min-height:24px;font-weight:800}
-.card .cf{font-size:12px;color:var(--ink3);margin-top:2px;font-weight:700}
-.card .cbtn{margin-top:14px;display:flex;justify-content:center}
-.card .cbtn .btn{min-width:60%}
-.card .pv{width:150px;height:96px;border-radius:18px}
-.card .pv .pn{font-size:40px}
-.card .pv .pvring{width:84px;height:84px}
-.card .pvf svg{width:70px;height:88px}
-.card .pvs svg{width:44px;height:44px}
-.card.ed::after,.tile.ed::after{content:"";position:absolute;inset:0;background:linear-gradient(115deg,transparent 25%,rgba(255,120,220,.22) 38%,rgba(120,220,255,.25) 50%,rgba(255,255,140,.22) 62%,transparent 75%);background-size:260% 100%;animation:sheen 2.2s linear infinite;pointer-events:none;mix-blend-mode:screen}
-.promo{position:absolute;top:16%;left:0;right:0;text-align:center;font-size:40px;font-weight:900;color:var(--gold);text-shadow:0 3px 0 rgba(0,0,0,.5),0 0 22px var(--gold);opacity:0;pointer-events:none;z-index:5}
-.xbtns{width:100%;display:flex;gap:10px}
-.xbtns .btn{flex:1;min-height:56px;padding:0 10px;white-space:nowrap}
-.xbtns .btn-gold{flex:1.5;font-size:18px;font-weight:900}
-.sumgrid{position:absolute;inset:0;display:none;flex-wrap:wrap;align-content:center;justify-content:center;gap:10px;padding:10px}
-.sumgrid.on{display:flex}
-.sumgrid .tile{min-height:0;padding-bottom:12px}
-
-/* ===== 見本の絵 ===== */
-.pv{position:relative;width:84px;height:60px;border-radius:14px;display:flex;align-items:center;justify-content:center;border:1px solid rgba(255,255,255,.12);overflow:hidden;flex:none}
-.pv .pvring{position:absolute;width:50px;height:50px;left:50%;top:50%;transform:translate(-50%,-50%)}
-.pv .pn{position:relative;font-family:var(--num);font-weight:700;font-size:22px;line-height:1}
-.pvf{border:0;background:none;overflow:visible}
-.pvf svg{width:44px;height:56px;transform-origin:50% 100%;animation:flick 1.2s ease-in-out infinite alternate}
-.pvf[data-rb] svg{animation:flick 1.2s ease-in-out infinite alternate,hue 3s linear infinite}
-@keyframes flick{from{transform:scale(1,1)}to{transform:scale(.94,1.06)}}
+.cglow{position:absolute;inset:14%;border-radius:50%;z-index:2;opacity:0;pointer-events:none;transition:opacity .25s;mix-blend-mode:screen}
+.pips{display:flex;justify-content:center;gap:10px;margin-top:6px;pointer-events:none}
+.pips i{width:16px;height:12px;transform:skewX(-14deg);background:#0d1d36;box-shadow:inset 0 0 0 1.5px #2a3a5a}
+.pips i.on{background:#fff;box-shadow:0 0 10px #fff}
+.xhint{margin-top:12px;color:var(--tx2);font-size:15px;font-weight:700;pointer-events:none}
+.promo{position:absolute;top:22%;left:0;right:0;text-align:center;font-family:var(--head);font-size:44px;color:var(--g3);text-shadow:0 3px 0 #3a2000,0 0 22px var(--g3);opacity:0;pointer-events:none;z-index:5;transform:rotate(-7deg)}
+/* 当たり＝全面（景品の絵・NEW・格の帯・説明） */
+.card{position:absolute;inset:0;z-index:4;display:none;flex-direction:column;align-items:center;justify-content:center}
+.card.on{display:flex}
+.card .prize{position:relative;width:300px;height:300px;flex:none}
+.card .prize img{width:100%;height:100%;object-fit:cover;-webkit-mask-image:radial-gradient(closest-side,#000 58%,transparent 100%);mask-image:radial-gradient(closest-side,#000 58%,transparent 100%)}
+.card .prize.rb2 img{animation:hue 3s linear infinite}
+/* 金の景品は動く（型 4節：普通＝色・レア＝質感・金＝動く） */
+.card.r2 .prize{animation:float 2.8s ease-in-out infinite}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-9px)}}
 @keyframes hue{to{filter:hue-rotate(360deg)}}
-.pvs{background:radial-gradient(circle at 50% 35%,#2D3375,#171A44)}
-.pvs svg{width:28px;height:28px}
+.card .prize .pvt{position:absolute;left:78px;right:78px;top:18px;bottom:18px;width:auto;height:auto;box-shadow:0 0 0 3px var(--pa),0 0 44px color-mix(in srgb,var(--pa) 50%,transparent),0 24px 30px rgba(0,0,0,.55)}
+.card .prize .sndp{position:absolute;inset:40px}
+.card .new{position:absolute;right:28px;top:26px;z-index:2;transform:rotate(-7deg) skewX(-10deg);background:var(--new);padding:3px 12px 2px;box-shadow:0 3px 0 #127a50}
+.card .new b{display:block;transform:skewX(10deg);font-family:var(--num);font-style:italic;font-weight:900;font-stretch:75%;font-size:24px;line-height:1;color:#05261a;letter-spacing:.02em}
+.card .new.dup{background:#2a3a5a;box-shadow:0 3px 0 #0d1d36}
+.card .new.dup b{color:var(--tx2);font-family:var(--jp);font-style:normal;font-size:15px;line-height:1.4}
+.grb{align-self:stretch;margin:-4px -46px 0;transform:rotate(-7deg);height:66px;display:flex;align-items:center;gap:16px;padding:0 52px;white-space:nowrap;background:var(--gbg);box-shadow:0 0 30px var(--gsh),inset 0 2px 0 rgba(255,255,255,.4);color:#fff}
+.grb.r0{--gbg:linear-gradient(180deg,#2f7bff,#0b56e6 70%);--gsh:rgba(61,155,255,.45)}
+.grb.r1{--gbg:linear-gradient(180deg,#9a52ff,#7420e6 70%);--gsh:rgba(166,107,255,.5)}
+.grb.r2{--gbg:linear-gradient(180deg,#ffd85a 0%,#f0a500 60%,#d98e00 100%);--gsh:rgba(255,198,53,.6);color:#1d1200}
+.grb .gr{display:flex;align-items:center;justify-content:center;width:44px;height:44px;background:#06122a;transform:rotate(45deg);flex:none;margin-left:6px;box-shadow:0 0 0 2px rgba(255,255,255,.75)}
+.grb .gr b{transform:rotate(-45deg);font-size:15px;font-weight:900;color:var(--rc);white-space:nowrap}
+.grb .gr b.one{font-size:21px}
+.grb .nm{font-family:var(--head);font-size:30px;line-height:1;letter-spacing:.02em}
+.grb .nm small{font-family:var(--jp);font-size:13px;font-weight:900;margin-left:10px;letter-spacing:0;vertical-align:4px}
+.card .cd{align-self:stretch;margin:26px 8px 0;font-size:17px;font-weight:700;line-height:1.5;text-shadow:0 1px 3px rgba(0,0,0,.85);word-break:keep-all;overflow-wrap:anywhere;text-wrap:balance}
+.card .cd b{color:var(--rc);font-weight:900}
+.card .cf{align-self:stretch;margin:2px 8px 0;font-size:13px;font-weight:500;color:var(--tx2);text-shadow:0 1px 3px rgba(0,0,0,.9),0 0 8px rgba(0,0,0,.7)}
+.card.ed .prize::after{content:"";position:absolute;inset:18%;border-radius:50%;background:linear-gradient(115deg,transparent 25%,rgba(255,120,220,.3) 38%,rgba(120,220,255,.32) 50%,rgba(255,255,140,.3) 62%,transparent 75%);background-size:260% 100%;animation:sheen 2.2s linear infinite;mix-blend-mode:screen}
+.xbtns{display:flex;gap:12px;align-items:center;min-height:60px;margin-top:8px}
+.xbtns .tb{flex:1}
+.xbtns .btn{flex:1.6}
+/* 全部割る＝一覧 */
+.sumgrid{position:absolute;inset:0;z-index:4;display:none;flex-wrap:wrap;align-content:center;justify-content:center;gap:10px;padding:10px 16px}
+.sumgrid.on{display:flex}
+.sumgrid .tile{width:30%;min-height:0}
+/* 景品の見本（タイマーの色＝コードの色の見本・炎と音＝生成の絵） */
+.pv{position:relative;width:84px;height:84px;flex:none;display:flex;align-items:center;justify-content:center}
+.pv img{width:100%;height:100%;-webkit-mask-image:radial-gradient(closest-side,#000 70%,transparent 100%);mask-image:radial-gradient(closest-side,#000 70%,transparent 100%)}
+.pv.rb2 img{animation:hue 3s linear infinite}
+.pvt{position:relative;width:54px;height:78px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8%;overflow:hidden;transform:rotate(-6deg);box-shadow:0 0 0 1.5px var(--pa),0 0 16px color-mix(in srgb,var(--pa) 40%,transparent)}
+.pvt i{display:block;height:7%;transform:skewX(-14deg);background:var(--pa);opacity:.95;width:72%}
+.pvt b{font-family:var(--num);font-style:normal;font-weight:800;font-stretch:75%;font-size:2.3em;line-height:1}
+.pvt small{font-size:.5em;font-weight:700;opacity:.65;line-height:1}
+.pv .pvt{font-size:11px}
+.pv .pvt small{display:none}
+.card .pvt{font-size:36px}
+.sndp{display:flex;align-items:flex-end;justify-content:center;gap:5%;padding:22% 18%;background:radial-gradient(closest-side,rgba(var(--sc),.28),transparent 100%)}
+.sndp i{flex:1;background:linear-gradient(180deg,rgba(var(--sc),1),rgba(var(--sc),.45));transform:skewX(-10deg);box-shadow:0 0 10px rgba(var(--sc),.6)}
+.sndp em{position:absolute;left:0;right:0;bottom:4%;text-align:center;font-style:normal;font-family:var(--head);font-size:.95em;color:#fff;text-shadow:0 2px 0 var(--ol)}
+.pv .sndp{position:absolute;inset:0;font-size:13px}
+.card .sndp{font-size:30px}
 .goldtx{background:linear-gradient(100deg,#e0a100 20%,#fff1b8 45%,#e0a100 70%);background-size:220% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:sheen 7s linear infinite}
 
 /* ===== 図鑑・設定 ===== */
-.hdr{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px;flex:none}
-.hdr .ttl{display:flex;align-items:center;gap:10px}
-.hdr h2{font-size:24px;font-weight:900;letter-spacing:.04em}
-.seg{display:flex;gap:4px;padding:4px;border-radius:16px;background:#0E1030;border:1px solid var(--line);margin-bottom:14px;flex:none}
-.seg button{flex:1;min-height:44px;border-radius:12px;font-size:14px;font-weight:800;color:var(--ink2);text-align:center}
-.seg button.on{background:linear-gradient(180deg,#30367C,#242962);color:#fff;box-shadow:inset 0 1px 0 rgba(255,255,255,.14),0 3px 0 #090A22}
-.prog{display:flex;align-items:center;gap:12px;font-size:14px;font-weight:800;color:var(--ink2);margin:0 2px 14px;flex:none}
-.prog .lvtrack{flex:1;height:10px}
-.prog b{font-size:20px;color:#fff}
-.prog .hint{font-size:12px;color:var(--ink3);font-weight:700}
+.hdr{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:44px;margin-left:-10px}
+#dHd,#lHd{margin:10px 0 14px}
+.seg{display:flex;gap:12px;margin:8px 4px 16px}
+.seg button{flex:1;min-height:44px;display:flex;align-items:center;justify-content:center;transform:skewX(-10deg);box-shadow:inset 0 0 0 1.5px rgba(181,191,214,.3);font-size:13px;font-weight:700;color:var(--tx2);white-space:nowrap}
+.seg button span{transform:skewX(10deg)}
+.seg button.on{background:var(--tx);color:var(--bg);box-shadow:none;font-weight:900}
+.prog{display:flex;align-items:center;gap:12px;font-size:13px;font-weight:700;color:var(--tx2);margin:0 2px 14px}
+.prog b{font-family:var(--num);font-style:italic;font-weight:900;font-stretch:75%;font-size:28px;color:#fff;line-height:1}
+.prog .lb{flex:1}
+.prog .lb i{background:linear-gradient(180deg,#fff,#b5bfd6)}
+.prog .hint{font-size:11px;color:var(--tx3);font-weight:700}
 .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
-.tile{position:relative;overflow:hidden;border-radius:18px;background:linear-gradient(180deg,#20245A,#15173B);border:2px solid color-mix(in srgb,var(--rc,#3A3F80) 55%,transparent);padding:12px 6px 10px;display:flex;flex-direction:column;align-items:center;gap:6px;min-height:160px;box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 6px 14px rgba(0,0,0,.3);cursor:pointer}
-.tile:active{transform:scale(.97)}
-.tile .tn{font-size:14px;font-weight:800;text-align:center;line-height:1.3}
-.tile .tr{font-size:11px;font-weight:900;border-radius:999px;padding:0 9px;color:#0A0B1E;background:var(--rc);letter-spacing:.05em}
-.tile .from{font-size:11px;color:var(--ink3);text-align:center;line-height:1.35;font-weight:700}
-.tile.lock{background:linear-gradient(180deg,#171A44,#111331);border-style:dashed}
-.tile.lock .pv{opacity:.42;filter:saturate(.5)}
-.tile.lock .tn{color:var(--ink2)}
-.tile.lock .tr{opacity:.7}
-.tile .lk{position:absolute;top:8px;left:8px;width:22px;height:22px;border-radius:50%;background:rgba(10,11,30,.8);display:flex;align-items:center;justify-content:center;color:var(--ink2)}
+.tile{position:relative;background:rgba(255,255,255,.035);box-shadow:inset 0 0 0 1.5px var(--rc,#2a3a5a);border-radius:3px;padding:10px 4px 10px;display:flex;flex-direction:column;align-items:center;gap:3px;min-height:170px;cursor:pointer;overflow:hidden}
+.tile:active{background:rgba(124,196,255,.1)}
+.tile .tn{font-size:15px;font-weight:700;text-align:center;line-height:1.3}
+.tile .tr{font-size:11px;font-weight:900;line-height:1.6;padding:0 9px;color:#06122a;background:var(--rc);transform:skewX(-10deg)}
+.tile .tr i{display:inline-block;font-style:normal;transform:skewX(10deg)}
+.tile .from{font-size:11px;color:var(--tx3);text-align:center;line-height:1.35;font-weight:500}
+.tile.lock{box-shadow:inset 0 0 0 1.5px #22304a;background:rgba(0,0,0,.22)}
+.tile.lock .pv{filter:grayscale(1) brightness(.38)}
+.tile.lock .tn{color:var(--tx3)}
+.tile.lock .tr{background:#22304a;color:var(--tx3)}
+.tile .lk{position:absolute;top:8px;left:8px;width:24px;height:24px;display:flex;align-items:center;justify-content:center;color:var(--tx2);background:#06122a;border-radius:50%;z-index:1}
 .tile .lk svg{width:13px;height:13px}
-.tile .price{display:flex;align-items:center;gap:3px;font-size:13px;font-weight:800;color:#AFDAFF}
-.tile .price svg{width:14px;height:14px}
-.tile.eq{border-color:var(--green);box-shadow:0 0 0 2px rgba(61,220,151,.22),0 0 18px rgba(61,220,151,.25)}
-.tile .eqm{position:absolute;top:7px;right:7px;width:22px;height:22px;border-radius:50%;background:var(--green);display:flex;align-items:center;justify-content:center;z-index:1}
+.tile .price{display:flex;align-items:center;gap:4px;font-size:13px;font-weight:700;color:var(--t1l)}
+.shard img.sm{width:26px;height:26px;transform:none;background:none;box-shadow:none;margin:-4px -2px}
+.tile .price img.sm{width:18px;height:18px;transform:none;background:none;-webkit-mask-image:radial-gradient(closest-side,#000 70%,transparent 100%);mask-image:radial-gradient(closest-side,#000 70%,transparent 100%)}
+.tile .price .sm{width:9px;height:9px;transform:rotate(45deg);background:linear-gradient(135deg,#e6f6ff,#63bbff 50%,#2f5bff)}
+.tile.eq{box-shadow:inset 0 0 0 2px #fff,0 0 16px rgba(255,255,255,.22)}
+.tile .eqm{position:absolute;top:8px;right:8px;width:24px;height:24px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;z-index:1}
 .tile .eqm svg{width:13px;height:13px}
-.lab h3{font-size:13px;font-weight:900;color:var(--ink3);letter-spacing:.12em;margin:22px 4px 8px}
-.lab .note{font-size:14px;color:var(--ink2);line-height:1.7;margin:0 4px}
-.group{padding:2px 16px;border-radius:20px}
-.rowi{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:56px;font-size:16px;font-weight:700;border-bottom:1px solid var(--line)}
-.rowi:last-child{border-bottom:0}
-.rowi small{display:block;font-size:12px;color:var(--ink3);font-weight:700;line-height:1.4}
-.lab .btns{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.lab .btns .btn{font-size:15px;min-height:54px;padding:0 10px}
-.lab input{width:110px;min-height:40px;border-radius:12px;border:1px solid var(--line);background:#0E1030;color:var(--ink);font:inherit;font-weight:800;padding:0 12px;text-align:right;-webkit-user-select:text;user-select:text}
-.tog{width:54px;height:32px;flex:none;border-radius:999px;background:#2A2F66;position:relative;transition:background .2s}
+.tile.ed::after{content:"";position:absolute;inset:0;background:linear-gradient(115deg,transparent 25%,rgba(255,120,220,.18) 38%,rgba(120,220,255,.2) 50%,rgba(255,255,140,.18) 62%,transparent 75%);background-size:260% 100%;animation:sheen 2.2s linear infinite;pointer-events:none;mix-blend-mode:screen}
+.lab h3{font-size:13px;font-weight:700;color:var(--tx3);letter-spacing:.12em;margin:26px 2px 6px}
+.lab .note{font-size:15px;color:var(--tx2);line-height:1.7;margin:0 2px}
+.group{border-top:1px solid var(--line)}
+.rowi{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:56px;font-size:17px;font-weight:500;border-bottom:1px solid var(--line)}
+.rowi small{display:block;font-size:13px;color:var(--tx3);font-weight:500;line-height:1.4}
+.lab .btns{display:grid;grid-template-columns:1fr 1fr;gap:12px 14px;margin:14px 6px 0}
+.lab .wide{grid-column:span 2}
+.lab .ol{margin:12px 6px 0}
+.lab .btns .ol{margin:0}
+.lab input{width:110px;min-height:40px;border:0;box-shadow:inset 0 0 0 1.5px rgba(181,191,214,.3);background:#0b1a2e;color:var(--tx);font:inherit;font-weight:700;padding:0 12px;text-align:right;-webkit-user-select:text;user-select:text}
+.tog{width:54px;height:32px;flex:none;border-radius:999px;background:#22304a;position:relative;transition:background .2s}
 .tog::after{content:"";position:absolute;top:3px;left:3px;width:26px;height:26px;border-radius:50%;background:#fff;transition:transform .2s;box-shadow:0 2px 4px rgba(0,0,0,.4)}
-.tog.on{background:var(--green)}.tog.on::after{transform:translateX(22px)}
+.tog.on{background:var(--g1)}.tog.on::after{transform:translateX(22px)}
 .tog.off{opacity:.4}
+.danger{color:#ff8a9a}
 
 /* ===== 共通 ===== */
-#flameCv{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:0}
 #fx{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:50}
 #flash{position:fixed;inset:0;pointer-events:none;opacity:0;z-index:49;background:#fff}
-#toast{position:fixed;left:50%;bottom:120px;transform:translateX(-50%);background:rgba(34,38,88,.97);border:1px solid var(--line);color:#fff;font-size:15px;font-weight:700;padding:11px 18px;border-radius:14px;opacity:0;transition:opacity .25s;z-index:60;pointer-events:none;white-space:nowrap;box-shadow:0 10px 30px rgba(0,0,0,.45)}
+#toast{position:fixed;left:50%;bottom:120px;transform:translateX(-50%);background:#0b1a2e;box-shadow:inset 0 0 0 1px rgba(124,196,255,.3),0 10px 30px rgba(0,0,0,.5);color:#fff;font-size:15px;font-weight:700;padding:11px 18px;border-radius:3px;opacity:0;transition:opacity .25s;z-index:60;pointer-events:none;white-space:nowrap}
 #toast.on{opacity:1}
 #hapl{position:fixed;left:0;top:0;width:1px;height:1px;opacity:.01;overflow:hidden;pointer-events:none}
-.sheet{position:fixed;inset:0;background:rgba(5,6,20,.6);display:none;align-items:flex-end;z-index:40;-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)}
+.sheet{position:fixed;inset:0;background:rgba(3,8,16,.66);display:none;align-items:flex-end;z-index:40;-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)}
 .sheet.on{display:flex}
-.sheet .in{width:100%;background:linear-gradient(180deg,#23275C,#1A1D48);border-radius:26px 26px 0 0;padding:10px 20px max(18px,env(safe-area-inset-bottom));border-top:1px solid var(--line)}
-.sheet .in::before{content:"";display:block;width:40px;height:5px;border-radius:3px;background:rgba(255,255,255,.25);margin:0 auto 12px}
-.sheet .sht{font-size:13px;font-weight:900;color:var(--ink3);letter-spacing:.12em;margin:0 0 4px}
-.sheet .in button{display:flex;align-items:center;justify-content:space-between;width:100%;min-height:56px;border-bottom:1px solid var(--line);font-size:17px;font-weight:800}
-.sheet .in button:last-child{border-bottom:0;color:var(--ink2)}
-.sheet .in button.cur{color:#8CCBFF}
+.sheet .in{width:100%;background:#0b1a2e;padding:14px 20px max(18px,env(safe-area-inset-bottom));box-shadow:inset 0 2px 0 rgba(124,196,255,.3)}
+.sheet .sht{font-family:var(--head);font-size:24px;color:#fff;transform:rotate(-7deg);transform-origin:left center;margin:4px 0 12px}
+.sheet .in button{display:flex;align-items:center;justify-content:space-between;width:100%;min-height:56px;border-bottom:1px solid var(--line);font-size:17px;font-weight:700}
+.sheet .in button:last-child{border-bottom:0;color:var(--tx2)}
+.sheet .in button.cur{color:var(--t1l)}
 .sheet .in button.cur::after{content:"✓";font-weight:900}
+
 /* 低い画面（全画面のアプリで 852pt 前後＝上下の余白を引いた分） */
 @media (max-height:880px){
- .hhead{padding-bottom:10px}
- #hToday{margin:6px 0 2px}#hToday b{font-size:80px}
- .dbar{margin:26px 0 10px}
- .wkhead{min-height:34px;margin-bottom:10px}
- .wd i{width:32px;height:32px}
- .wkbar{margin-top:12px;padding-top:10px}
- .tl{min-height:80px}.tl .art{width:54px;height:45px}
- .startwrap{padding-top:12px}.start{min-height:62px}
+ .big{font-size:186px}#rNum{font-size:176px}
+ .hd .t{font-size:31px}#rHd .t,#xHd .t{font-size:40px}
+ .rib{margin:26px -46px 22px}.rb{height:46px}
+ .fl{width:100px;height:100px}.fl img{left:-11px;top:-11px;width:122px;height:122px}.rw{min-height:100px}
+ .card .prize{width:270px;height:270px}
 }
 /* もっと低い画面（Safari で上下のバーが出ている時＝650pt 前後） */
 @media (max-height:720px){
  .scr{padding-top:max(8px,env(safe-area-inset-top))}
- .hhead{padding:0 0 8px}.lvhex{width:42px;height:47px}.lvhex b{font-size:23px}.ibtn{width:44px;height:44px}
- .hero{padding:12px 16px 12px;margin-bottom:8px}
- #hToday{margin:2px 0 0}#hToday b{font-size:62px}#hToday i{font-size:20px}
- .dbar{margin:22px 0 8px;height:12px}
- .tgoal{font-size:16px}.tgoal b{font-size:22px}
- .wk{padding:10px 14px;margin-bottom:8px}
- .wkhead{min-height:30px;margin-bottom:6px}
- .streak svg{width:24px;height:30px}.streak .n{font-size:30px}
- .wd{gap:3px}.wd i{width:28px;height:28px}.wd i svg{width:14px;height:14px}
- .wkbar{margin-top:8px;padding-top:8px}.wkb{margin-top:6px}
- .tiles{gap:8px}
- .tl{min-height:66px;padding:8px 10px 8px 8px;border-radius:18px}.tl .art{width:46px;height:38px}.tl .tv{font-size:24px}
- .startwrap{flex-direction:row;align-items:stretch;padding-top:10px;gap:8px}
- .subj{flex-direction:column;justify-content:center;gap:0;padding:0 12px;border-radius:18px;min-height:60px;line-height:1.25}
- .subj>svg{display:none}
- .start{flex:1;min-height:60px;font-size:19px;letter-spacing:.03em}
- .start .pl{width:30px;height:30px}
- .tsubj{margin-bottom:6px}
- .tdiff{margin-top:2.5vh}.alive{margin-top:2vh}
+ .ghost{font-size:120px;top:60px}
+ .big{font-size:132px}#rNum{font-size:124px}
+ .hd{margin-top:10px}.hd .t{font-size:26px}#rHd .t,#xHd .t{font-size:32px}#hHd{margin-top:8px}
+ .rib{margin:18px -46px 14px}.rb{height:40px;margin-bottom:4px}.rb .k{font-size:15px}.rb .g b{font-size:26px}.rb.on .g b{font-size:28px}
+ .fl{width:74px;height:74px}.fl img{left:-8px;top:-8px;width:90px;height:90px}.rw{min-height:76px}
+ .sn{min-height:40px}.sn em{font-size:42px}.lvl{margin-top:4px}
+ .tiles{margin-top:8px}.tl{height:48px}.tl .ti,.tl .ti img{width:40px;height:40px}
+ .act{padding-top:10px}.btn{height:56px}.sub{height:52px}
+ .trib{margin-top:28px}.tdiff{margin-top:16px}.alive{margin-top:12px}
+ .chest{width:min(56vw,200px)}.xarea{min-height:250px}.xtop{min-height:36px}#xHd{margin-top:6px}.card .prize{width:176px;height:176px}.card .prize .pvt{left:44px;right:44px;top:8px;bottom:8px}.card .pvt{font-size:26px}.grb{height:50px;margin-top:-6px}.grb .nm{font-size:22px}.grb .gr{width:36px;height:36px}.card .cd{margin-top:26px;font-size:15px}
+ .rw2{min-height:110px}.chs{transform:scale(.82);transform-origin:left center}
 }
-@media (prefers-reduced-motion: reduce){.dg.roll{animation:fadein .3s}.rays{animation:none}.pvf svg,.chest .art,.tl.has .art{animation:none}@keyframes fadein{from{opacity:0}to{opacity:1}}}
+@media (prefers-reduced-motion: reduce){.dg.roll{animation:fadein .3s}.chest .art,.tl.has .ti img,.card .prize img,.card .prize,.pv img{animation:none}@keyframes fadein{from{opacity:0}to{opacity:1}}}
 </style>
 </head>
 <body>
-<svg aria-hidden="true" width="0" height="0" style="position:absolute;width:0;height:0;overflow:hidden">
-<defs>
- <linearGradient id="gLv" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7C95FF"/><stop offset="1" stop-color="#3340D0"/></linearGradient>
- <linearGradient id="gFireO" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FF4D5E"/><stop offset=".55" stop-color="#FF7A1A"/><stop offset="1" stop-color="#FFB13A"/></linearGradient>
- <linearGradient id="gFireI" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFE38A"/><stop offset="1" stop-color="#FFF8DC"/></linearGradient>
- <linearGradient id="gShard" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#E6F6FF"/><stop offset=".5" stop-color="#63BBFF"/><stop offset="1" stop-color="#2F5BFF"/></linearGradient>
- <linearGradient id="gTicket" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7FF0C4"/><stop offset="1" stop-color="#1FA578"/></linearGradient>
- <linearGradient id="cL0" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#E3A160"/><stop offset="1" stop-color="#A9652F"/></linearGradient>
- <linearGradient id="cB0" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#BE7E44"/><stop offset="1" stop-color="#7E461D"/></linearGradient>
- <linearGradient id="cM0" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#B4BCCD"/><stop offset="1" stop-color="#5A6274"/></linearGradient>
- <linearGradient id="cL1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8AC8FF"/><stop offset="1" stop-color="#2D6FE6"/></linearGradient>
- <linearGradient id="cB1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5A9DFA"/><stop offset="1" stop-color="#1E4FBF"/></linearGradient>
- <linearGradient id="cM1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="#AFBCDD"/></linearGradient>
- <linearGradient id="cL2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#DDBBFF"/><stop offset="1" stop-color="#7A3FE6"/></linearGradient>
- <linearGradient id="cB2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#A877FA"/><stop offset="1" stop-color="#4F20AE"/></linearGradient>
- <linearGradient id="cM2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFEFA8"/><stop offset="1" stop-color="#DDA01C"/></linearGradient>
- <linearGradient id="cL3" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFF6BE"/><stop offset="1" stop-color="#F2B000"/></linearGradient>
- <linearGradient id="cB3" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFDD5E"/><stop offset="1" stop-color="#CF8600"/></linearGradient>
- <linearGradient id="cM3" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="#FFE2A0"/></linearGradient>
-</defs>
-</svg>
-
 <section id="home" class="scr on">
-  <header class="hhead">
-    <div class="lvhex"><svg viewBox="0 0 50 56" aria-hidden="true"><path d="M25 2.5 46.5 15v26L25 53.5 3.5 41V15Z" fill="url(#gLv)" stroke="#B3C3FF" stroke-width="2.5" stroke-linejoin="round"/><path d="M8 17.5 25 7.5 42 17.5" fill="none" stroke="rgba(255,255,255,.45)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg><b id="hLv">1</b></div>
-    <div class="lvcol">
-      <div class="lvtop"><span class="k">レベル</span><span id="hLvNext"></span></div>
-      <div class="lvtrack"><div class="lvfill" id="hLvFill"></div></div>
-    </div>
-    <button class="ibtn" id="hLab" aria-label="設定"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
+  <div class="lay ember"></div>
+  <div class="lay hglow" id="hGlow"></div>
+  <div class="lay ghost">NEXT<br>RECORD</div>
+  <header class="htop">
+    <b class="tday">今日の勉強<span id="hToday"></span></b><span class="hdate" id="hDate"></span>
+    <button class="ibtn" id="hLab" aria-label="設定"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.650 1.650 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
   </header>
-  <div class="panel hero">
-    <div class="hlabel"><span>今日の勉強</span><span class="hdate" id="hDate"></span></div>
-    <div class="bignum" id="hToday"></div>
-    <div class="dbar" id="hBar"><div class="dfill" id="hDFill"></div><div class="dline" id="hDLine"><span id="hDLab"></span></div></div>
-    <div class="tgoal" id="hGoal"></div>
+  <div class="hd" id="hHd"><div class="t" id="hHdT"></div><div class="bar"></div></div>
+  <div class="big" id="hBig"></div>
+  <div class="rib"><div class="rb t1" id="hR1"></div><div class="rb t2" id="hR2"></div><div class="rb t3" id="hR3"></div></div>
+  <div class="rw">
+    <div class="fl" id="hFl"><img src="art/c-flame.webp" alt=""></div>
+    <div class="rwt">
+      <div class="sn" id="hStreak"></div>
+      <div class="sg" id="hStreakSub"></div>
+      <div class="lvl"><b>レベル<em id="hLv">1</em></b><span id="hLvNext"></span></div>
+      <div class="lb"><i id="hLvFill"></i></div>
+    </div>
   </div>
-  <div class="panel wk">
-    <div class="wkhead"><div class="streak" id="hStreak"></div><div class="ticket" id="hTicket"></div></div>
-    <div class="week" id="hWeek"></div>
-    <div class="wkbar" id="hWk"></div>
-  </div>
-  <div class="tiles">
-    <button class="panel tl" id="hBox"></button>
-    <button class="panel tl" id="hDex"></button>
-  </div>
-  <div class="startwrap">
-    <button class="subj" id="hSubj"></button>
-    <button class="btn btn-fire start" id="hStart"><span class="pl"><svg viewBox="0 0 14 14" aria-hidden="true"><path d="M2 1.2v11.6L12.5 7Z" fill="#fff"/></svg></span>勉強を始める</button>
-  </div>
+  <div class="tiles"><button class="tl" id="hBox"></button><button class="tl" id="hDex"></button></div>
+  <div class="act"><button class="sub" id="hSubj"></button><button class="btn fire" id="hStart"><span><b class="pl"></b><i>勉強を始める</i></span></button></div>
 </section>
 
 <section id="timer" class="scr">
-  <div class="spd" id="tSpd" hidden></div>
-  <div class="tsubj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 4h6a4 4 0 0 1 4 4v13a3 3 0 0 0-3-3H2z"/><path d="M22 4h-6a4 4 0 0 0-4 4v13a3 3 0 0 1 3-3h7z"/></svg><span id="tSubj"></span></div>
-  <div class="ringwrap" id="tBar">
-    <svg class="tring" viewBox="0 0 300 300" aria-hidden="true"><circle class="trk" cx="150" cy="150" r="134"/><circle class="tfl" id="tFill" cx="150" cy="150" r="134" transform="rotate(-90 150 150)"/><g id="tLine"><line class="tmk" x1="150" y1="3" x2="150" y2="31"/></g></svg>
-    <div class="tcenter"><div class="tlab">今日の合計</div><div class="clock" id="tClock"></div><div class="tcap" id="tSess"></div></div>
-  </div>
+  <div id="tSpd" hidden></div>
+  <div class="tsubj"><span id="tSubj"></span></div>
+  <div class="tmain"><div class="tlab">今日の合計</div><div class="clock" id="tClock"></div><div class="tcap" id="tSess"></div></div>
+  <div class="trib" id="tBar"><div class="rb" id="tRb"><i class="fill" id="tFill"></i><span class="k" id="tRk"></span><span class="o" id="tRo"></span><span class="g" id="tRg"></span></div></div>
   <div class="tdiff" id="tDiff"></div>
   <div class="alive"><i class="dot"></i><span>数えています</span></div>
-  <div class="tboxw"><span class="ic" id="tBoxArt"></span><span id="tBox"></span></div>
+  <div class="tboxw"><img id="tBoxArt" src="art/c-chest.webp" alt=""><span id="tBox"></span></div>
   <button class="hold" id="tEnd" aria-label="長押しで終わる">
-    <svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="21" fill="rgba(255,255,255,.08)"/><circle class="ringbg" cx="32" cy="32" r="26" fill="none" stroke-width="4"/><circle class="ringfg" cx="32" cy="32" r="26" fill="none" stroke-width="4" stroke-linecap="round" transform="rotate(-90 32 32)"/><rect x="25.5" y="25.5" width="13" height="13" rx="3" fill="currentColor"/></svg>
+    <svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="21" fill="rgba(255,255,255,.08)"/><circle class="ringbg" cx="32" cy="32" r="26" fill="none" stroke-width="4"/><circle class="ringfg" cx="32" cy="32" r="26" fill="none" stroke-width="4" stroke-linecap="round" transform="rotate(-90 32 32)"/><rect x="25.5" y="25.5" width="13" height="13" rx="2" fill="currentColor"/></svg>
     <span>長押しで終わる</span>
   </button>
 </section>
 
 <section id="result" class="scr">
+  <div class="lay rart" id="rArt"></div>
+  <div class="lay ghost" id="rGhost"></div>
+  <div class="lay" id="rEdge"></div>
   <canvas id="flameCv"></canvas>
-  <div class="edge" id="rEdge"></div>
   <div class="rwrap">
-    <div class="rdemo" id="rDemo" hidden>試し：数字は作り物です</div>
-    <div class="rttl">今日の勉強</div>
-    <div class="rcard" id="rCard"><div class="bignum rnum" id="rNum"></div></div>
-    <div class="chips" id="rChips"></div>
-    <div class="panel bars">
-      <div class="brow" id="bDay"><span class="bl">今日</span><div class="bt"><div class="bf"></div><div class="bk dash"></div><div class="bk"></div></div><span class="br"></span></div>
-      <div class="brow" id="bWeek"><span class="bl">今週</span><div class="bt"><div class="bf"></div><div class="bk"></div></div><span class="br"></span></div>
-      <div class="brow" id="bMonth"><span class="bl">今月</span><div class="bt"><div class="bf"></div><div class="bk"></div></div><span class="br"></span></div>
+    <div class="rtop"><b>今日の勉強</b><span class="rdemo" id="rDemo" hidden>試し：数字は作り物</span><span class="chips" id="rChips"></span></div>
+    <div class="hd" id="rHd"><div class="t" id="rHdT"></div><div class="bar"></div></div>
+    <div class="rcw" id="rCard"><div class="big" id="rNum"></div></div>
+    <div class="rib" id="rRib">
+      <div class="rb t1" id="bDay"><i class="fill"></i><span class="k"></span><span class="o"></span><span class="g"></span></div>
+      <div class="rb t2" id="bWeek"><i class="fill"></i><span class="k"></span><span class="o"></span><span class="g"></span></div>
+      <div class="rb t3" id="bMonth"><i class="fill"></i><span class="k"></span><span class="o"></span><span class="g"></span></div>
     </div>
-    <div class="sec panel rlv" id="rLvSec">
-      <div class="lvline"><span class="lvn" id="rLv"></span><div class="lvtrack"><div class="lvfill" id="rLvFill"></div></div></div>
-      <div class="chips" id="rWhy" style="margin-top:8px"></div>
-      <div class="lvmsg" id="rLvMsg"></div>
+    <div class="rw2">
+      <div class="chs sec" id="rBoxSec"><div id="rBoxes"></div></div>
+      <div class="rwt2">
+        <div class="sec" id="rBoxTx"><div class="bn" id="rBoxN"></div><div class="bm" id="rBoxMsg"></div></div>
+        <div class="sec" id="rLvSec">
+          <div class="lvl"><b id="rLv"></b><span id="rLvMsg"></span></div>
+          <div class="lb"><i id="rLvFill"></i></div>
+          <div class="why" id="rWhy"></div>
+        </div>
+      </div>
     </div>
-    <div class="sec" id="rBoxSec">
-      <div class="boxrow" id="rBoxes"></div>
-      <div class="boxmsg" id="rBoxMsg"></div>
-    </div>
-    <div class="sec" id="rNextSec"><div class="panel" id="rNext"></div></div>
+    <div class="sec rnext" id="rNextSec"><div id="rNext"></div></div>
     <div class="rbtns sec" id="rBtns">
-      <button class="btn btn-ghost" id="rHome">ホームへ</button>
-      <button class="btn btn-gold" id="rOpen">割る</button>
+      <button class="tb" id="rHome">ホームへ</button>
+      <button class="btn gold" id="rOpen"><span><i id="rOpenT">宝箱を開ける</i></span></button>
     </div>
   </div>
-  <div class="stamp" id="rStamp"></div>
   <div class="tapnote" id="rTap">叩くと早送り</div>
 </section>
 
 <section id="box" class="scr">
-  <div class="xtop"><span class="xleft" id="xLeft"></span><span class="shard"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 1.5 18 8 10 18.5 2 8Z" fill="url(#gShard)" stroke="#0B2A66" stroke-width="1.2" stroke-linejoin="round"/><path d="M2 8h16M6.5 8 10 1.5 13.5 8 10 18.5Z" fill="none" stroke="rgba(255,255,255,.55)" stroke-width="1"/></svg>欠片 <b id="xShard">0</b></span></div>
-  <div class="xarea" id="xArea">
-    <div class="rays" id="xRays"></div>
-    <div class="chest t0" id="xChest"><div class="art" id="xArt"></div><div class="cglow" id="xGlow"></div><svg class="cracks" id="xCracks" viewBox="0 0 200 160"></svg></div>
-    <div class="pips" id="xPips"></div>
-    <div class="xhint" id="xHint">叩いて割る</div>
-    <div class="promo" id="xPromo">昇格！</div>
-    <div class="card" id="xCard"></div>
-    <div class="sumgrid" id="xSum"></div>
-  </div>
-  <div class="xbtns">
-    <button class="btn btn-ghost" id="xDone">おわる</button>
-    <button class="btn btn-ghost" id="xAll">全部割る</button>
-    <button class="btn btn-gold" id="xNext" hidden>次の箱</button>
+  <div class="lay xart" id="xArt2"></div>
+  <div class="lay xhalo" id="xHalo"></div>
+  <div class="lay ghost" id="xGhost">TREASURE<br>BOX</div>
+  <div class="xwrap">
+    <div class="xtop"><b>宝箱</b><span class="xleft" id="xLeft"></span><span class="shard" id="xShardW"><img class="sm" src="art/j-shard.webp" alt="">欠片<b id="xShard">0</b></span></div>
+    <div class="hd" id="xHd"><div class="t" id="xHdT"></div><div class="bar"></div></div>
+    <div class="xarea" id="xArea">
+      <div class="chest" id="xChest"><div class="art" id="xArt"></div><div class="cglow" id="xGlow"></div><svg class="cracks" id="xCracks" viewBox="0 0 200 200"></svg></div>
+      <div class="pips" id="xPips"></div>
+      <div class="xhint" id="xHint">叩いて割る</div>
+      <div class="promo" id="xPromo">昇格！</div>
+      <div class="card" id="xCard"></div>
+      <div class="sumgrid" id="xSum"></div>
+    </div>
+    <div class="xbtns">
+      <button class="tb" id="xDone">おわる</button>
+      <button class="tb" id="xAll">全部割る</button>
+      <button class="tb" id="xNext" hidden><span><i>次の箱</i></span></button>
+      <button class="btn gold" id="xEq" hidden><span><i>付けてみる</i></span></button>
+    </div>
   </div>
 </section>
 
 <section id="dex" class="scr">
-  <div class="hdr"><div class="ttl"><button class="ibtn" id="dBack" aria-label="ホームへ"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></button><h2>図鑑</h2></div><span class="shard"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 1.5 18 8 10 18.5 2 8Z" fill="url(#gShard)" stroke="#0B2A66" stroke-width="1.2" stroke-linejoin="round"/><path d="M2 8h16M6.5 8 10 1.5 13.5 8 10 18.5Z" fill="none" stroke="rgba(255,255,255,.55)" stroke-width="1"/></svg>欠片 <b id="dShard">0</b></span></div>
-  <div class="seg" id="dTabs"><button data-t="theme" class="on">タイマーの色</button><button data-t="flame">炎の色</button><button data-t="snd">数え上げの音</button></div>
+  <div class="lay ghost">COLLECTION</div>
+  <div class="hdr"><button class="ibtn" id="dBack" aria-label="ホームへ"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></button><span class="shard"><img class="sm" src="art/j-shard.webp" alt="">欠片<b id="dShard">0</b></span></div>
+  <div class="hd" id="dHd"><div class="t">図鑑</div><div class="bar"></div></div>
+  <div class="seg" id="dTabs"><button data-t="theme" class="on"><span>タイマーの色</span></button><button data-t="flame"><span>炎の色</span></button><button data-t="snd"><span>数え上げの音</span></button></div>
   <div class="prog" id="dProg"></div>
   <div class="grid" id="dGrid"></div>
-  <div style="height:20px;flex:none"></div>
+  <div style="height:20px"></div>
 </section>
 
 <section id="lab" class="scr lab">
-  <div class="hdr"><div class="ttl"><button class="ibtn" id="lBack" aria-label="ホームへ"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></button><h2>設定</h2></div></div>
-  <div class="panel group">
+  <div class="hdr"><button class="ibtn" id="lBack" aria-label="ホームへ"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></button></div>
+  <div class="hd k0" id="lHd"><div class="t">設定</div><div class="bar"></div></div>
+  <div class="group">
     <div class="rowi"><span>音<small id="lSoundNote">消音スイッチを入れている時は鳴りません</small></span><button class="tog" id="lSound" aria-label="音のオンとオフ"></button></div>
   </div>
   <h3>確認用（作り物の数字）</h3>
   <p class="note">ここの数字は作り物です。本物の気持ちよさは、ホームの「勉強を始める」で勉強した後の結果発表で確かめてください。</p>
-  <div class="btns" style="margin-top:12px">
-    <button class="btn btn-ghost" data-demo="none">届かない日</button>
-    <button class="btn btn-ghost" data-demo="day">昨日超え（青）</button>
-    <button class="btn btn-ghost" data-demo="week">先週超え（紫）</button>
-    <button class="btn btn-ghost" data-demo="month">先月超え（金）</button>
-    <button class="btn btn-ghost" data-demo="triple" style="grid-column:span 2">トリプル更新</button>
-    <button class="btn btn-ghost" data-demo="boxes" style="grid-column:span 2">宝箱を3つもらって割る（木・青・金）</button>
+  <div class="btns">
+    <button class="ol" data-demo="none"><span>届かない日</span></button>
+    <button class="ol" data-demo="day"><span>昨日超え（青）</span></button>
+    <button class="ol" data-demo="week"><span>先週超え（紫）</span></button>
+    <button class="ol" data-demo="month"><span>先月超え（金）</span></button>
+    <button class="ol wide" data-demo="triple"><span>トリプル更新</span></button>
+    <button class="ol wide" data-demo="boxes"><span>宝箱を4つもらって割る（木・青・紫・金）</span></button>
   </div>
   <h3>これまでの目安（使い始めの比べる相手）</h3>
-  <div class="panel group">
+  <div class="group">
     <label class="rowi">昨日（分）<input id="lY" inputmode="numeric"></label>
     <label class="rowi">先週の合計（分）<input id="lW" inputmode="numeric"></label>
     <label class="rowi">先月の合計（分）<input id="lM" inputmode="numeric"></label>
   </div>
-  <button class="btn btn-ghost" id="lSave" style="margin-top:12px">目安を保存</button>
+  <button class="ol" id="lSave"><span>目安を保存</span></button>
   <h3>記録</h3>
   <p class="note" id="lInfo"></p>
-  <button class="btn btn-ghost btn-danger" id="lReset" style="margin-top:10px">記録を全部消す</button>
-  <p class="note" style="margin-top:16px;padding-bottom:10px">振動：iPhone の Safari には振動の部品が無いので、iOS 18 の「スイッチを押すと軽く震える」仕組みで試しています（宝箱を叩く時）。出なくても試作の不具合ではありません。</p>
+  <button class="ol danger" id="lReset"><span>記録を全部消す</span></button>
+  <p class="note" style="margin-top:18px;padding-bottom:10px;font-size:13px">振動：iPhone の Safari には振動の部品が無いので、iOS 18 の「スイッチを押すと軽く震える」仕組みで試しています（宝箱を叩く時）。出なくても試作の不具合ではありません。</p>
 </section>
 
 <div class="sheet" id="sSubj"><div class="in" id="sSubjIn"></div></div>
@@ -545,7 +565,6 @@ b{font-weight:800}
 <div id="flash"></div>
 <div id="toast"></div>
 <label id="hapl" aria-hidden="true"><input type="checkbox" switch id="hapi"></label>
-
 <script>
 'use strict';
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
@@ -554,17 +573,19 @@ const MUTE=Q.get('mute')==='1';
 const SPEED=Math.max(1,Number(Q.get('speed'))||1);
 const RM=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const KEY='dpbProto1';
-const TIER_C=['#cfd8e6','#4da3ff','#b07cff','#ffc93c','#ffc93c'];
-const RAR_C=['#a9c7ff','#b07cff','#ffc93c'];
+const TIER_C=['#cfd8e6','#3D9BFF','#A66BFF','#FFC635','#FFC635'];
+const RAR_C=['#3D9BFF','#A66BFF','#FFC635'];
 const RAR_N=['普通','レア','金'];
 const BOX_N=['木箱','青箱','紫箱','金箱'];
 const BOX_C=['#a8743d','#4d8cff','#9a62ff','#ffd24a'];
+const BOX_IMG=['c-chest','j-chest-blue','j-chest-purple','c-chest-gold'];
 const BOX_HITS=[3,3,4,5];
 const DROP=[[85,13,2],[60,33,7],[30,55,15],[0,40,60]];
 const DUP=[5,15,50],PRICE=[40,120,400];
-const TYPE_N={theme:'タイマー画面の色',flame:'炎の色',snd:'数え上げの音'};
+const TYPE_N={theme:'タイマーの色',flame:'炎の色',snd:'数え上げの音'};
+// 絵＝生成の絵（art/）。まだ無い絵（火の粉・虹・音）は仮の見せ方＝炎は近い絵・音は音の形（コードの線）
 const ITEMS=[
- {id:'theme_night',t:'theme',n:'よる',r:0,bg:'radial-gradient(100% 60% at 50% 38%,#1B1F50 0%,#0A0B1E 72%)',fg:'#EEF0FF',ac:'#3D9BFF'},
+ {id:'theme_night',t:'theme',n:'よる',r:0,bg:'radial-gradient(100% 60% at 50% 40%,#0E2140 0%,#07111F 70%)',fg:'#EEF0FF',ac:'#3D9BFF'},
  {id:'theme_blue',t:'theme',n:'ふかい青',r:0,bg:'#0a1834',fg:'#dbe7ff',ac:'#6aa8ff'},
  {id:'theme_green',t:'theme',n:'ふかい緑',r:0,bg:'#07211b',fg:'#d6f5e9',ac:'#38d39f'},
  {id:'theme_akane',t:'theme',n:'あかね',r:0,bg:'#200909',fg:'#ffb3a6',ac:'#ff6a55'},
@@ -572,19 +593,19 @@ const ITEMS=[
  {id:'theme_kohaku',t:'theme',n:'こはく',r:1,bg:'radial-gradient(120% 80% at 50% 30%,#2a1a06 0%,#120b03 70%)',fg:'#ffd59a',ac:'#ffb347'},
  {id:'theme_shinkai',t:'theme',n:'しんかい',r:1,bg:'linear-gradient(180deg,#05243a,#020c18 60%,#01060c)',fg:'#bfefff',ac:'#36c6ff'},
  {id:'theme_gold',t:'theme',n:'金の夜',r:2,bg:'#08070a',fg:'#ffc93c',ac:'#ffc93c',gold:true},
- {id:'flame_blue',t:'flame',n:'青い炎',r:0,c:['#e6f3ff','#59a8ff','#1d4fd6']},
- {id:'flame_purple',t:'flame',n:'紫の炎',r:0,c:['#f3e8ff','#b07cff','#5b2bd1']},
- {id:'flame_green',t:'flame',n:'緑の炎',r:0,c:['#eaffef','#4ce08a','#138a4a']},
- {id:'flame_white',t:'flame',n:'しろい炎',r:1,c:['#ffffff','#dfe8ff','#8aa0c8']},
- {id:'flame_spark',t:'flame',n:'火の粉',r:1,c:['#fff4d6','#ff9a3c','#d1361b'],spark:true},
- {id:'flame_gold',t:'flame',n:'金の炎',r:2,c:['#fffbe6','#ffd34d','#e08a00']},
- {id:'flame_rainbow',t:'flame',n:'虹の炎',r:2,c:['#ffffff','#ff5fb0','#5ec8ff'],rainbow:true},
- {id:'snd_click',t:'snd',n:'カチ',r:0},
- {id:'snd_coin',t:'snd',n:'コイン',r:0},
- {id:'snd_marimba',t:'snd',n:'マリンバ',r:0},
- {id:'snd_glass',t:'snd',n:'ガラス',r:1},
- {id:'snd_8bit',t:'snd',n:'8bit',r:1},
- {id:'snd_fanfare',t:'snd',n:'ファンファーレ',r:2}
+ {id:'flame_blue',t:'flame',n:'青い炎',r:0,c:['#e6f3ff','#59a8ff','#1d4fd6'],img:'j-fl-blue'},
+ {id:'flame_purple',t:'flame',n:'紫の炎',r:0,c:['#f3e8ff','#b07cff','#5b2bd1'],img:'j-fl-purple'},
+ {id:'flame_green',t:'flame',n:'緑の炎',r:0,c:['#eaffef','#4ce08a','#138a4a'],img:'j-fl-green'},
+ {id:'flame_white',t:'flame',n:'しろい炎',r:1,c:['#ffffff','#dfe8ff','#8aa0c8'],img:'j-fl-white'},
+ {id:'flame_spark',t:'flame',n:'火の粉',r:1,c:['#fff4d6','#ff9a3c','#d1361b'],spark:true,img:'j-fl-spark'},
+ {id:'flame_gold',t:'flame',n:'金の炎',r:2,c:['#fffbe6','#ffd34d','#e08a00'],img:'c-gflame'},
+ {id:'flame_rainbow',t:'flame',n:'虹の炎',r:2,c:['#ffffff','#ff5fb0','#5ec8ff'],rainbow:true,img:'j-fl-rainbow'},
+ {id:'snd_click',img:'j-snd-click',t:'snd',n:'カチ',r:0,w:[3,8,3,8,3,8],sc:'124,196,255'},
+ {id:'snd_coin',img:'j-snd-coin',t:'snd',n:'コイン',r:0,w:[4,7,10,7,4,7],sc:'255,215,94'},
+ {id:'snd_marimba',img:'j-snd-marimba',t:'snd',n:'マリンバ',r:0,w:[10,8,6,5,4,3],sc:'255,154,61'},
+ {id:'snd_glass',img:'j-snd-glass',t:'snd',n:'ガラス',r:1,w:[9,6,10,5,9,6],sc:'205,166,255'},
+ {id:'snd_8bit',img:'j-snd-8bit',t:'snd',n:'8bit',r:1,w:[6,6,10,10,3,3],sc:'61,220,151'},
+ {id:'snd_fanfare',img:'j-snd-fanfare',t:'snd',n:'ファンファーレ',r:2,w:[5,7,9,10,10,10],sc:'255,198,53'}
 ];
 const IT=Object.fromEntries(ITEMS.map(i=>[i.id,i]));
 
@@ -635,7 +656,13 @@ function totalXP(){let t=S.xpBonus;for(const s of S.sessions)t+=s.m;return t;}
 // ---------- 表示の小物 ----------
 function fm(m){m=Math.max(0,Math.round(m));if(m<60)return m+'分';const h=Math.floor(m/60),r=m%60;return h+'時間'+(r?r+'分':'');}
 function fmS(m){m=Math.max(0,Math.round(m));return m>=600?Math.floor(m/60)+'時間':fm(m);}
-function bigHTML(m){m=Math.max(0,Math.round(m));const h=Math.floor(m/60),r=m%60;return h?`<b>${h}</b><i>時間</i><b>${String(r).padStart(2,'0')}</b><i>分</i>`:`<b>${r}</b><i>分</i>`;}
+// 山の数字＝数字（斜体）と単位（直立の和文）を別の要素に
+function bigHTML(m,pre){m=Math.max(0,Math.round(m));const h=Math.floor(m/60),r=m%60;return (pre?`<i class="pre">${pre}</i>`:'')+(h?`<b>${h}</b><i>時間</i><b>${String(r).padStart(2,'0')}</b><i>分</i>`:`<b>${r}</b><i>分</i>`);}
+// 帯や行の中の数字（数字＝Archivo・単位＝和文）
+function numHTML(m,sign){m=Math.max(0,Math.round(m));const h=Math.floor(m/60),r=m%60;const s=sign||'';return h?`<b>${s}${h}</b><span>時間</span>${r?`<b>${r}</b><span>分</span>`:''}`:`<b>${s}${r}</b><span>分</span>`;}
+function emHTML(m){m=Math.max(0,Math.round(m));const h=Math.floor(m/60),r=m%60;return h?`<em>${h}</em>時間<em>${r}</em>分`:`<em>${r}</em>分`;}
+// 山の数字が画面の幅に入りきらない時だけ縮める
+function fitBig(el){el.style.fontSize='';const base=parseFloat(getComputedStyle(el).fontSize),av=document.documentElement.clientWidth-26,w=el.scrollWidth;if(w>av)el.style.fontSize=Math.floor(base*av/w)+'px';}
 function setRoll(el,m){
  m=Math.max(0,Math.round(m));const h=Math.floor(m/60),r=m%60;
  const parts=h?[[String(h),'時間'],[String(r).padStart(2,'0'),'分']]:[[String(r),'分']];
@@ -645,37 +672,12 @@ function setRoll(el,m){
 }
 let toastT=0;function toast(t){const e=$('#toast');e.textContent=t;e.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>e.classList.remove('on'),2200);}
 function md(ms){const d=dDate(ms);return (d.getMonth()+1)+'/'+d.getDate();}
-// 絵（全部その場の SVG・外の画像なし）
-const FL_O='M24 2C27 12 40 20 40 36 40 49 33 58 24 58S8 49 8 37C8 29 12 24 16 20 16 27 19 31 22 32 20 22 21 12 24 2Z';
-const FL_I='M24 28C26 34 32 38 32 46 32 52 28 56 24 56S16 52 16 46.5C16 42 19 39 21 37 21 41 23 43 24 43 23 38 22.5 33 24 28Z';
-const FLAME_SVG=`<svg viewBox="0 0 48 60" aria-hidden="true"><path d="${FL_O}" fill="url(#gFireO)"/><path d="${FL_I}" fill="url(#gFireI)"/></svg>`;
-const CHECK_SVG='<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>';
-const TICKET_SVG='<svg viewBox="0 0 26 18" aria-hidden="true"><path d="M2 2h22v4.5a2.5 2.5 0 0 0 0 5V16H2v-4.5a2.5 2.5 0 0 0 0-5Z" fill="url(#gTicket)" stroke="#0A3D2C" stroke-width="1.5" stroke-linejoin="round"/><path d="M17 3.5v11" stroke="rgba(255,255,255,.65)" stroke-width="1.5" stroke-dasharray="2 2"/></svg>';
-const BOOK_SVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 4h6a4 4 0 0 1 4 4v13a3 3 0 0 0-3-3H2z"/><path d="M22 4h-6a4 4 0 0 0-4 4v13a3 3 0 0 1 3-3h7z"/></svg>';
-const CHEV_SVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>';
+// 印（UI の記号だけ・物の絵は描かない＝絵は art/ の生成の絵）
+const CHECK_SVG='<svg viewBox="0 0 24 24" fill="none" stroke="#06122a" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>';
 const LOCK_SVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>';
-const NOTE_SVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>';
-const SHARD_SVG='<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 1.5 18 8 10 18.5 2 8Z" fill="url(#gShard)" stroke="#0B2A66" stroke-width="1.2" stroke-linejoin="round"/><path d="M2 8h16M6.5 8 10 1.5 13.5 8 10 18.5Z" fill="none" stroke="rgba(255,255,255,.55)" stroke-width="1"/></svg>';
-const DEX_ART='<svg viewBox="0 0 58 48" aria-hidden="true"><g stroke="#0A0B1E" stroke-width="2.5" stroke-linejoin="round"><rect x="6" y="10" width="22" height="30" rx="4" fill="#3D9BFF" transform="rotate(-15 17 25)"/><rect x="30" y="10" width="22" height="30" rx="4" fill="#FFC635" transform="rotate(15 41 25)"/><rect x="18" y="5" width="22" height="33" rx="4" fill="#A66BFF"/></g><path d="M29 13l2.1 4.6 5 .5-3.7 3.3 1 4.9-4.4-2.5-4.4 2.5 1-4.9-3.7-3.3 5-.5z" fill="#fff"/></svg>';
-const CH_O=['#2B1608','#0A1A46','#1F0A47','#4A2700'];
-function chestSVG(t){
- const o=CH_O[t],L=`url(#cL${t})`,B=`url(#cB${t})`,M=`url(#cM${t})`;
- const lid='M16 76V52C16 26 46 14 100 14S184 26 184 52V76Z',body='M16 72H184V144a10 10 0 0 1-10 10H26a10 10 0 0 1-10-10Z';
- return `<svg viewBox="0 0 200 160" aria-hidden="true">`+
-  `<path d="${body}" fill="${B}"/>`+
-  (t===0?'<path d="M18 100H182M18 126H182" stroke="rgba(0,0,0,.22)" stroke-width="3"/>':'<path d="M18 130H182V144a8 8 0 0 1-8 8H26a8 8 0 0 1-8-8Z" fill="rgba(0,0,0,.16)"/>')+
-  `<path d="${lid}" fill="${L}"/>`+
-  (t===0?'<path d="M80 15V74M120 15V74" stroke="rgba(0,0,0,.18)" stroke-width="3"/>':'')+
-  '<path d="M32 50C34 33 58 25 100 25S166 33 168 50" fill="none" stroke="rgba(255,255,255,.38)" stroke-width="6" stroke-linecap="round"/>'+
-  `<g fill="${M}" stroke="${o}" stroke-width="4" stroke-linejoin="round"><path d="M44 21C49 19.5 55 18.4 62 17.6V153H44Z"/><path d="M138 17.6C145 18.4 151 19.5 156 21V153H138Z"/></g>`+
-  `<path d="${lid}" fill="none" stroke="${o}" stroke-width="5" stroke-linejoin="round"/><path d="${body}" fill="none" stroke="${o}" stroke-width="5" stroke-linejoin="round"/>`+
-  `<rect x="9" y="66" width="182" height="16" rx="6" fill="${M}" stroke="${o}" stroke-width="4"/>`+
-  `<g fill="rgba(255,255,255,.8)" stroke="${o}" stroke-width="1.5"><circle cx="53" cy="36" r="3"/><circle cx="53" cy="104" r="3"/><circle cx="53" cy="138" r="3"/><circle cx="147" cy="36" r="3"/><circle cx="147" cy="104" r="3"/><circle cx="147" cy="138" r="3"/></g>`+
-  `<rect x="81" y="58" width="38" height="44" rx="9" fill="${M}" stroke="${o}" stroke-width="4"/><circle cx="100" cy="76" r="5.5" fill="${o}"/><path d="M97 78h6l1.6 12h-9.2z" fill="${o}"/>`+
-  (t>=2?`<path d="M100 22l9 9-9 9-9-9z" fill="${t===3?'#FF3D6E':'#5EC8FF'}" stroke="${o}" stroke-width="3" stroke-linejoin="round"/><path d="M96.5 29l3.5-3.5 3.5 3.5" stroke="rgba(255,255,255,.85)" stroke-width="2" fill="none" stroke-linecap="round"/>`:'')+
-  (t===3?'<path d="M174 14l2.6 6.4 6.4 2.6-6.4 2.6-2.6 6.4-2.6-6.4-6.4-2.6 6.4-2.6z" fill="#fff"/><path d="M24 26l1.9 4.6 4.6 1.9-4.6 1.9-1.9 4.6-1.9-4.6-4.6-1.9 4.6-1.9z" fill="#fff" opacity=".85"/>':'')+
-  `</svg>`;
-}
+const SM='<img class="sm" src="art/j-shard.webp" alt="">';
+function art(n){return `art/${n}.webp`;}
+function chestIMG(t,cls,st){return `<img${cls?` class="${cls}"`:''} src="${art(BOX_IMG[t])}" alt="${BOX_N[t]}"${st?` style="${st}"`:''}>`;}
 
 // ---------- 音（その場で合成） ----------
 const AU={ctx:null,master:null};let NB=null;
@@ -755,14 +757,14 @@ function flameCols(){const it=IT[S.equip.flame];if(it.rainbow){const h=Math.roun
 const FL={cv:$('#flameCv'),g:null,lv:0,P:[],run:false,last:0,acc:0};FL.g=FL.cv.getContext('2d');
 function flSize(){const r=Math.min(2,devicePixelRatio||1);FL.cv.width=innerWidth*r;FL.cv.height=innerHeight*r;FL.g.setTransform(r,0,0,r,0,0);}
 addEventListener('resize',flSize);flSize();
-function flameSet(lv){FL.lv=lv;const card=$('#rCard');card.style.boxShadow=lv>0?`0 0 ${10+lv*9}px ${TIER_C[Math.min(lv,4)]}88`:'';if(lv>0&&!FL.run){FL.run=true;FL.last=performance.now();requestAnimationFrame(flStep);}}
+// 炎の粒＝景品「炎の色」。数字の下の縁から立ち、字より下の層（#flameCv は字の層の下）
+function flameSet(lv){FL.lv=lv;if(lv>0&&!FL.run){FL.run=true;FL.last=performance.now();requestAnimationFrame(flStep);}}
 function flStep(now){
  const dt=Math.min(0.05,(now-FL.last)/1000);FL.last=now;const g=FL.g;g.clearRect(0,0,innerWidth,innerHeight);
- if(FL.lv>0&&!RM&&$('#result').classList.contains('on')){const r=$('#rCard').getBoundingClientRect(),it=IT[S.equip.flame],lv=FL.lv;FL.acc+=[0,30,55,85,130][lv]*(it.spark?1.3:1)*dt;
-  while(FL.acc>=1){FL.acc--;const cs=flameCols(),s=0.7+lv*0.28;let x,y;
-   if(lv>=2&&Math.random()<0.25){x=Math.random()<.5?r.left+6:r.right-6;y=r.top+Math.random()*r.height*0.6;}else{x=r.left+14+Math.random()*(r.width-28);y=r.top+16;}
+ if(FL.lv>0&&!RM&&$('#result').classList.contains('on')){const r=$('#rNum').getBoundingClientRect(),it=IT[S.equip.flame],lv=FL.lv;FL.acc+=[0,24,44,70,110][lv]*(it.spark?1.3:1)*dt;
+  while(FL.acc>=1){FL.acc--;const cs=flameCols(),s=0.7+lv*0.28;const x=r.left+20+Math.random()*(r.width-40),y=r.bottom-r.height*0.18;
    FL.P.push({x,y,vx:(Math.random()-.5)*24,vy:-(70+Math.random()*90)*s,s:(7+Math.random()*9)*s,life:(0.45+Math.random()*0.35)*(0.8+lv*0.22),age:0,c0:cs[0],c:cs[1]});
-   if(it.spark&&Math.random()<0.3)FL.P.push({spark:1,x:r.left+Math.random()*r.width,y:r.top+10,vx:(Math.random()-.5)*60,vy:-(140+Math.random()*120),s:2,life:0.8,age:0,c:'#ffd38a'});}}
+   if(it.spark&&Math.random()<0.3)FL.P.push({spark:1,x:r.left+Math.random()*r.width,y,vx:(Math.random()-.5)*60,vy:-(140+Math.random()*120),s:2,life:0.8,age:0,c:'#ffd38a'});}}
  g.globalCompositeOperation='lighter';
  for(let i=FL.P.length-1;i>=0;i--){const p=FL.P[i];p.age+=dt;if(p.age>=p.life){FL.P.splice(i,1);continue;}p.vy-=40*dt;p.x+=p.vx*dt;p.y+=p.vy*dt;const k=1-p.age/p.life;
   if(p.spark){g.globalAlpha=k;g.fillStyle=p.c;g.fillRect(p.x,p.y,p.s,p.s);continue;}
@@ -778,29 +780,40 @@ function center(el){const r=el.getBoundingClientRect();return{x:r.left+r.width/2
 // ---------- 画面の切り替え ----------
 function show(id){$$('.scr').forEach(s=>s.classList.toggle('on',s.id===id));if(id==='home')renderHome();if(id==='dex')renderDex();if(id==='lab')renderLab();}
 
+// ---------- 斜めの帯（塗った＝超えた・中が空＝まだの目標・薄い＝比べる相手がまだ無い） ----------
+function ribEnsure(row){if(!row.querySelector('.k'))row.innerHTML='<i class="fill"></i><span class="k"></span><span class="o"></span><span class="g"></span>';}
+function ribHol(row,name,left){ribEnsure(row);row.classList.remove('on','off');row.querySelector('.k').innerHTML=`${name}<small>まで</small>`;row.querySelector('.o').textContent='';row.querySelector('.g').innerHTML=`<i>あと</i>${numHTML(left)}`;}
+function ribOn(row,name,target,over){ribEnsure(row);row.classList.remove('off');row.classList.add('on');row.querySelector('.k').textContent=name;row.querySelector('.o').textContent=fm(target);row.querySelector('.g').innerHTML=numHTML(over,'+');}
+function ribOff(row,name,when){ribEnsure(row);row.classList.remove('on');row.classList.add('off');row.querySelector('.k').textContent=name;row.querySelector('.o').textContent='';row.querySelector('.g').innerHTML=`<em>${when}</em>`;ribFill(row,0,0);}
+function ribFill(row,frac,ms){const f=row.querySelector('.fill');if(!f)return;f.style.transition=ms?`width ${ms}ms ease-out`:'none';f.style.width=(Math.max(0,Math.min(1,frac))*100)+'%';}
+
 // ---------- ホーム ----------
+const GLOW_C=['61,155,255','40,120,255','140,70,255','255,180,40'];
 function renderHome(){
  const st=stats(Date.now()),lv=lvOf(totalXP());
- $('#hLv').textContent=lv.L;$('#hLvFill').style.width=(lv.rest/lv.need*100)+'%';$('#hLvNext').innerHTML=`次まで あと <b>${fm(lv.need-lv.rest)}</b>`;
  $('#hDate').textContent=`${st.today.getMonth()+1}月${st.today.getDate()}日（${'日月火水木金土'[st.today.getDay()]}）`;
- $('#hToday').innerHTML=bigHTML(st.todayM);
- const g=$('#hGoal');
- if(st.yest==null){g.textContent=st.first?'最初の勉強を記録しよう':'明日から「昨日の自分」と比べます';$('#hBar').style.display='none';}
- else{$('#hBar').style.display='';const max=Math.max(st.yest*1.2,st.todayM*1.05,30),pc=st.yest/max*100;$('#hDFill').style.width=Math.min(100,st.todayM/max*100)+'%';
-  const dl=$('#hDLine');dl.style.left=pc+'%';dl.className='dline'+(pc<16?' l':pc>84?' r':'');$('#hDLab').textContent=`昨日 ${fm(st.yest)}`;
-  g.innerHTML=st.todayM<=st.yest?`昨日まで あと <b>${fm(st.yest-st.todayM+1)}</b>`:`昨日より <b class="up">+${fm(st.todayM-st.yest)}</b>`;}
- const ws=wStart(st.today);let w='';'月火水木金土日'.split('').forEach((c,i)=>{const k=kOf(addD(ws,i)),dn=dayM(k)>=5;w+=`<div class="wd${dn?' done':''}${k===st.tk?' now':''}${k>st.tk?' fut':''}"><i>${dn?CHECK_SVG:''}</i>${c}</div>`;});$('#hWeek').innerHTML=w;
- const sk=streakInfo();
- $('#hStreak').innerHTML=sk.n?`${FLAME_SVG}<span class="n">${sk.n}</span><span>日連続</span>`:`${FLAME_SVG}<span class="z">5分の勉強で 連続1日目</span>`;
- const wk=$('#hWk');
- if(st.lastW==null)wk.innerHTML=`<div class="wkt"><span>今週 <b>${fm(st.weekM)}</b></span><span class="k">来週から先週と比べる</span></div>`;
- else{const mx=Math.max(st.lastW*1.15,st.weekM*1.05,1);wk.innerHTML=`<div class="wkt"><span>今週 <b>${fm(st.weekM)}</b></span><span class="k">${st.weekM>st.lastW?'<em>先週超え</em>':`先週超えまで あと <b>${fm(st.lastW-st.weekM+1)}</b>`}</span></div><div class="wkb"><i style="width:${Math.min(100,st.weekM/mx*100)}%"></i><u style="left:${st.lastW/mx*100}%"></u></div>`;}
- $('#hTicket').innerHTML=`${TICKET_SVG}<span>お休み券</span><b>${sk.left}</b>`;
+ $('#hToday').innerHTML=emHTML(st.todayM);
+ // 3本の帯＝今日・今週・今月の今の状態。見出しと山＝次に超える目標（昨日→先週→先月）
+ const rows=[[$('#hR1'),'昨日',st.todayM,st.yest,'明日から'],[$('#hR2'),'先週',st.weekM,st.lastW,'来週から'],[$('#hR3'),'先月',st.monthM,st.lastM,'来月から']];
+ let tg=null,beat=0;
+ rows.forEach(([row,name,v,t,when],i)=>{if(t==null)ribOff(row,name,when);else if(v>t){ribOn(row,name,t,v-t);beat=i+1;}else{ribHol(row,name,t-v+1);ribFill(row,t?v/t:0,0);if(!tg)tg={k:i+1,name,left:t-v+1};}});
+ const hd=$('#hHd'),big=$('#hBig');
+ if(tg){hd.className='hd k'+tg.k;$('#hHdT').textContent=`${tg.name}を超えるまで`;big.className='big k'+tg.k;big.innerHTML=bigHTML(tg.left,'あと');}
+ else{hd.className='hd k'+beat;$('#hHdT').textContent=beat?['','昨日超え','先週超え','先月超え'][beat]:(st.first?'最初の勉強':'今日の勉強');big.className='big k'+beat;big.innerHTML=bigHTML(st.todayM);}
+ $('#hGlow').style.setProperty('--hc',GLOW_C[tg?tg.k:beat]);
+ fitBig(big);
+ // 勝ちを1つ＝連続日数（生成の炎の絵）とレベル
+ const sk=streakInfo(),todayOK=st.todayM>=5;
+ $('#hFl').classList.toggle('dim',!sk.n);
+ $('#hStreak').innerHTML=sk.n?`<em>${sk.n}</em><b>日連続</b>`:`<span class="z">5分の勉強で 連続1日目</span>`;
+ $('#hStreakSub').innerHTML=`${sk.n?(todayOK?'今日の分 達成':`今日やれば ${sk.n+1}日`):''}<span>お休み券 ${sk.left}</span>`;
+ $('#hLv').textContent=lv.L;$('#hLvFill').style.width=(lv.rest/lv.need*100)+'%';$('#hLvNext').innerHTML=`次まで <b>${fm(lv.need-lv.rest)}</b>`;
+ // 宝箱と図鑑
  const nb=S.boxes.length,hb=$('#hBox'),topT=nb?Math.max(...S.boxes.map(b=>b.t)):0;hb.classList.toggle('has',nb>0);
- hb.innerHTML=`<div class="art${nb?'':' dim'}">${chestSVG(topT)}</div><div><div class="tt">宝箱</div><div class="tv n">${nb}</div><div class="ts">${nb?'叩いて割る':`次まで ${60-S.timerCarry}分`}</div></div>${nb?'<span class="badge">割れる</span>':''}`;
- const have=ITEMS.filter(i=>S.owned[i.id]).length;
- $('#hDex').innerHTML=`<div class="art">${DEX_ART}</div><div><div class="tt">図鑑</div><div class="tv n">${have}<small>/${ITEMS.length}</small></div><div class="ts">集めた物</div></div>`;
- $('#hSubj').innerHTML=`${BOOK_SVG}<span class="k">科目</span><span class="sv">${S.subj}${CHEV_SVG}</span>`;
+ hb.innerHTML=`<span class="ti${nb?'':' dim'}">${chestIMG(topT)}</span><span class="tc"><span class="tt">宝箱</span><span class="ts">${nb?'叩いて割る':`次まで ${60-S.timerCarry}分`}</span></span><b class="tv">${nb}</b>${nb?'<span class="badge">割れる</span>':''}`;
+ const have=ITEMS.filter(i=>S.owned[i.id]).length,fl=IT[S.equip.flame];
+ $('#hDex').innerHTML=`<span class="ti"><img src="${art(fl.img)}" alt=""></span><span class="tc"><span class="tt">図鑑</span><span class="ts">集めた物</span></span><b class="tv">${have}<small>/${ITEMS.length}</small></b>`;
+ $('#hSubj').innerHTML=`<small>科目</small><b>${S.subj}</b>`;
 }
 $('#hStart').onclick=()=>{ac();const st=stats(Date.now());S.running={s:Date.now(),subj:S.subj,passed:false,nb:0,base:{todayM:st.todayM,yest:st.yest,carry:S.timerCarry,boxN:S.boxDay.k===st.tk?S.boxDay.n:0}};save();SND.start();hap(1);openTimer();};
 $('#hBox').onclick=()=>{if(S.boxes.length)openBoxes();else toast('宝箱はまだありません（タイマー60分で木箱1つ）');};
@@ -816,15 +829,17 @@ document.addEventListener('visibilitychange',()=>{if(document.visibilityState===
 function applyTheme(){const it=IT[S.equip.theme],t=$('#timer');t.style.background=it.bg;t.style.setProperty('--tfg',it.fg);t.style.setProperty('--tac',it.ac);t.classList.toggle('gold',!!it.gold);}
 function openTimer(){show('timer');applyTheme();$('#tSubj').textContent=S.running.subj;TLAST=-1;$('#tClock')._p=null;const sp=$('#tSpd');sp.hidden=SPEED===1;sp.textContent=`速さ×${SPEED}（確認用）`;wake(true);tick();clearInterval(TT);TT=setInterval(tick,1000);}
 function elMin(r,now){return Math.floor((now-r.s)/60000*SPEED);}
+// 光るのは「昨日」の帯だけ・塗りは分単位で伸びる・超えた時に一度だけ光る
 function tick(){
  const r=S.running;if(!r)return;const el=elMin(r,Date.now()),tot=r.base.todayM+el;
  if(el!==TLAST){setRoll($('#tClock'),tot);TLAST=el;}
  $('#tSess').textContent=`今回 ${fm(el)}`;
- const y=r.base.yest,bar=$('#tBar'),RC=2*Math.PI*134;
+ const y=r.base.yest,bar=$('#tBar'),rb=$('#tRb');
  if(y==null){$('#tDiff').textContent='今日の記録が、明日の「昨日の自分」になります';bar.classList.add('noref');}
- else{bar.classList.remove('noref');const max=Math.max(y*1.25,tot*1.05,10),fl=$('#tFill');fl.style.strokeDasharray=RC;fl.style.strokeDashoffset=RC*(1-Math.min(1,tot/max));$('#tLine').setAttribute('transform',`rotate(${y/max*360} 150 150)`);
-  if(tot<=y)$('#tDiff').innerHTML=`昨日まで あと <b>${fm(y-tot+1)}</b>`;
-  else{$('#tDiff').innerHTML=`昨日より <b>+${fm(tot-y)}</b>`;if(!r.passed){r.passed=true;save();bar.classList.remove('glow');void bar.offsetWidth;bar.classList.add('glow');}}}
+ else{bar.classList.remove('noref');$('#tDiff').textContent='';
+  if(tot<=y){rb.classList.remove('on');$('#tRk').innerHTML='昨日<small>まで</small>';$('#tRo').textContent='';$('#tRg').innerHTML=`<i>あと</i>${numHTML(y-tot+1)}`;$('#tFill').style.width=(y?Math.min(1,tot/y)*100:0)+'%';}
+  else{rb.classList.add('on');$('#tRk').textContent='昨日';$('#tRo').textContent=fm(y);$('#tRg').innerHTML=numHTML(tot-y,'+');
+   if(!r.passed){r.passed=true;save();bar.classList.remove('glow');void bar.offsetWidth;bar.classList.add('glow');}}}
  const capLeft=Math.max(0,6-r.base.boxN),carry=r.base.carry+el,n=Math.min(Math.floor(carry/60),capLeft);
  $('#tBox').textContent=n>=capLeft?`木箱 ${n} ・ 今日のタイマーの箱は上限`:`木箱 ${n} ・ 次の箱まで ${fm(60-carry%60)}`;
  if(n>(r.nb||0)){r.nb=n;save();pop($('#tBox'),1.25,400);}
@@ -865,25 +880,37 @@ function endSession(){
 let FAST=false,RES=false;
 const wait=ms=>new Promise(res=>{if(FAST||ms<=0)return res();const t0=performance.now();const f=()=>{if(FAST||performance.now()-t0>=ms)res();else requestAnimationFrame(f);};requestAnimationFrame(f);});
 $('#result').addEventListener('pointerdown',e=>{if(RES&&!e.target.closest('button'))FAST=true;});
-function chip(box,t,cls){const c=document.createElement('span');c.className='chip '+(cls||'');c.textContent=t;box.appendChild(c);pop(c,1.25,260);return c;}
-function barInit(row,b,t,lab,t2){
- const max=Math.max((t||0)*1.15,(b.a||0)*1.05,Math.max(t2||0,1)*1.15,1);row._max=max;
- const bf=row.querySelector('.bf'),ks=row.querySelectorAll('.bk');bf.style.transition='none';bf.style.width=(b.b/max*100)+'%';
- const solid=ks[ks.length-1];
- if(t==null){solid.style.display='none';row.classList.add('off');row.querySelector('.br').textContent=lab;}
- else{solid.style.display='';solid.style.left=(t/max*100)+'%';row.querySelector('.br').textContent=lab;}
- if(ks.length>1){const d=ks[0];if(t2==null)d.style.display='none';else{d.style.display='';d.style.left=(t2/max*100)+'%';}}
+function chip(box,t,cls){const c=document.createElement('span');c.className='chip '+(cls||'');c.innerHTML=`<i>${t}</i>`;box.appendChild(c);pop(c,1.25,260);return c;}
+// 段＝見出し（超えた瞬間に叩きつけられて残る）・山の数字の色・後ろの生成の光・背景の英字
+const ART_T=['','c-blue','j-purple','c-gburst','c-burst'];
+const GHOST_T=['TODAY<br>RECORD','NEW<br>RECORD','WEEK<br>RECORD','MONTH<br>RECORD','TRIPLE<br>RECORD'];
+const HD_W=[150,170,170,180,230];
+let RTOP=0;
+function slam(el){if(RM){el.animate([{opacity:0},{opacity:1}],{duration:300});return;}el.animate([{transform:'rotate(-7deg) scale(2.4)',opacity:0},{transform:'rotate(-7deg) scale(1)',opacity:1,offset:.55},{transform:'rotate(-7deg) scale(1.05)',opacity:1,offset:.75},{transform:'rotate(-7deg) scale(1)',opacity:1}],{duration:FAST?220:440,easing:'cubic-bezier(.2,.8,.3,1)'});}
+function setTier(t,label,doSlam){
+ RTOP=t;const hd=$('#rHd');hd.className='hd k'+t;hd.style.setProperty('--bw',HD_W[t]+'px');$('#rHdT').textContent=label;hd.style.opacity=1;
+ $('#rNum').className='big k'+t;$('#rGhost').innerHTML=GHOST_T[t];
+ if(doSlam)slam(hd);else hd.animate([{opacity:0},{opacity:1}],{duration:400});
+ const a=$('#rArt');if(t>0){a.style.backgroundImage=`url(${art(ART_T[t])})`;const op=[0,.62,.78,.9,1][t];a.getAnimations().forEach(x=>x.cancel());
+  a.animate(RM?[{opacity:0},{opacity:op}]:[{opacity:0,transform:'scale(.55)'},{opacity:op,transform:'scale(1)'}],{duration:FAST?200:560,easing:'cubic-bezier(.2,.8,.3,1)',fill:'forwards'});}
 }
-function barSet(row,v,ms){const bf=row.querySelector('.bf');bf.style.transition=ms?`width ${ms}ms ease-out`:'none';bf.style.width=Math.min(100,v/row._max*100)+'%';}
+function barInit(row,b,t,name,when){row._t=t;row._name=name;row._v=b.b;row._done=false;
+ if(t==null){ribOff(row,name,when);return;}
+ if(b.b>t){ribOn(row,name,t,b.b-t);row._done=true;return;}
+ ribHol(row,name,t-b.b+1);ribFill(row,t?b.b/t:0,0);}
+function barSet(row,v,ms){row._v=v;const t=row._t;if(t==null)return;
+ if(row._done){row.querySelector('.g').innerHTML=numHTML(v-t,'+');return;}
+ ribFill(row,t?v/t:1,ms);if(v<=t)row.querySelector('.g').innerHTML=`<i>あと</i>${numHTML(t-v+1)}`;}
 async function crossFx(t,label,row){
  const holdMs=[0,40,70,100][t];await wait(holdMs);
- const c=TIER_C[t],mk=[...row.querySelectorAll('.bk')].filter(k=>k.style.display!=='none').pop(),p=center(mk||row.querySelector('.bt'));
+ const c=TIER_C[t],rr=row.getBoundingClientRect(),p={x:Math.min(innerWidth-70,rr.right-90),y:rr.top+rr.height/2};
  flash(t>=3?'#ffe9a8':'#ffffff',[0,.32,.45,.6][t],[0,180,240,300][t]);shake($('.rwrap'),[0,0,3,6][t],[0,0,300,420][t]);
  burst(p.x,p.y,[0,40,90,160][t],[c,'#ffffff',t>=3?'#ffe9a8':c],{sp:[0,320,420,520][t],conf:t>=3,ring:[0,90,130,180][t]});
  SND.stamp(t);hap(t,110);
- row.classList.remove('off');row.classList.add('t'+t);const br=row.querySelector('.br');br.textContent=label;pop(br,1.5,320);
- const st=$('#rStamp');st.className='stamp';st.style.color=c;st.textContent=label;
- st.animate(RM?[{opacity:0},{opacity:1,offset:.2},{opacity:1,offset:.75},{opacity:0}]:[{opacity:0,transform:'translate(-50%,-50%) scale(2.4) rotate(-8deg)'},{opacity:1,transform:'translate(-50%,-50%) scale(1) rotate(-4deg)',offset:.18},{opacity:1,transform:'translate(-50%,-50%) scale(1.04) rotate(-4deg)',offset:.75},{opacity:0,transform:'translate(-50%,-60%) scale(.9) rotate(-4deg)'}],{duration:FAST?500:[0,800,950,1100][t],easing:'ease-out'});
+ const name=label.replace('超え','');
+ if(row._t!=null){const tv=name==='7日平均'&&row._avg!=null?row._avg:row._t;row._t=tv;row._done=true;ribOn(row,name,tv,(row._v||0)-tv);
+  if(!RM)row.animate([{filter:'brightness(2.4)'},{filter:'brightness(1)'}],{duration:FAST?150:480,easing:'ease-out'});}
+ if(t>=RTOP)setTier(t,label,true);
  flameSet(Math.max(FL.lv,t));
  await wait([0,450,600,750][t]);
 }
@@ -898,73 +925,83 @@ async function countRow(row,from,to,target,target2,steps,stepMs,onNum,tier,label
   prev=v;await wait(stepMs);
  }
 }
+function bHTML(m){return emHTML(m).replace(/em>/g,'b>');}
 function resetResult(D){
- flameSet(0);FL.P.length=0;PS.length=0;
- $('#rDemo').hidden=!D.demo;$('#rNum').innerHTML=bigHTML(D.before.day);$('#rChips').innerHTML='';$('#rWhy').innerHTML='';$('#rLvMsg').textContent='';
- $('#rBoxes').innerHTML='';$('#rBoxMsg').textContent='';$('#rNext').innerHTML='';
- ['#rLvSec','#rBoxSec','#rNextSec','#rBtns'].forEach(s=>$(s).classList.remove('on'));$('#rTap').style.display='';
- $$('.brow').forEach(r=>{r.className='brow';});
- barInit($('#bDay'),{b:D.before.day,a:D.after.day},D.tg.yest,D.tg.yest!=null?`昨日 ${fmS(D.tg.yest)}`:'明日から',D.tg.avg);
- barInit($('#bWeek'),{b:D.before.week,a:D.after.week},D.tg.lastW,D.tg.lastW!=null?`先週 ${fmS(D.tg.lastW)}`:'来週から');
- barInit($('#bMonth'),{b:D.before.month,a:D.after.month},D.tg.lastM,D.tg.lastM!=null?`先月 ${fmS(D.tg.lastM)}`:'来月から');
+ flameSet(0);FL.P.length=0;PS.length=0;RTOP=0;
+ $('#rDemo').hidden=!D.demo;$('#rChips').innerHTML='';$('#rWhy').innerHTML='';const lm=$('#rLvMsg');lm.textContent='';lm.className='';
+ const n=$('#rNum');n.className='big k0';n.innerHTML=bigHTML(D.before.day);fitBig(n);
+ const hd=$('#rHd');hd.getAnimations().forEach(a=>a.cancel());hd.style.opacity=0;hd.className='hd k0';
+ const a=$('#rArt');a.getAnimations().forEach(x=>x.cancel());a.style.opacity=0;$('#rGhost').innerHTML=GHOST_T[0];
+ $('#rBoxes').innerHTML='';$('#rBoxN').innerHTML='';$('#rBoxMsg').innerHTML='';$('#rNext').innerHTML='';
+ ['#rLvSec','#rBoxSec','#rBoxTx','#rNextSec','#rBtns'].forEach(s=>$(s).classList.remove('on'));$('#rTap').style.display='';
+ barInit($('#bDay'),{b:D.before.day,a:D.after.day},D.tg.yest,'昨日','明日から');$('#bDay')._avg=D.tg.avg;
+ barInit($('#bWeek'),{b:D.before.week,a:D.after.week},D.tg.lastW,'先週','来週から');
+ barInit($('#bMonth'),{b:D.before.month,a:D.after.month},D.tg.lastM,'先月','来月から');
  const e=$('#rEdge');e.getAnimations().forEach(a=>a.cancel());e.style.opacity=0;
+ $('#result').scrollTop=0;
 }
 async function runResult(D){
  show('result');resetResult(D);FAST=false;RES=true;
  const triple=!!(D.cr.day&&D.cr.week&&D.cr.month);
  const top=triple?4:D.cr.month?3:D.cr.week?2:(D.cr.day||D.first)?1:0;
- // 1 予告
+ // 1 予告（段の色の光が上から差す・線の枠は使わない）
  await wait(top?200:120);
- if(top>0){const c=TIER_C[top],e=$('#rEdge');e.style.boxShadow=`inset 0 0 0 3px ${c}, inset 0 0 70px ${c}99`;e.animate([{opacity:0},{opacity:1}],{duration:400,fill:'forwards'});await wait(450);}
- // 2 数え上げ（今日）
+ if(top>0){const c=TIER_C[top],e=$('#rEdge');e.style.background=`radial-gradient(90% 38% at 50% 20%,${c}55,transparent 70%)`;e.animate([{opacity:0},{opacity:1}],{duration:400,fill:'forwards'});await wait(450);}
+ // 2 数え上げ（今日）＝原因の札を出しながら
  FAST=false;
  if(D.before.day>0)chip($('#rChips'),`さっきまで ${fm(D.before.day)}`);
- chip($('#rChips'),`今回 +${fm(D.m)}（${D.subj}）`,'hot');await wait(top?200:120);
+ chip($('#rChips'),`今回 +${fm(D.m)}・${D.subj}`,'hot');await wait(top?200:120);
  const steps=[5,8,10,11,12][top];
- await countRow($('#bDay'),D.before.day,D.after.day,D.cr.day?D.tg.yest:null,D.cr.day?D.tg.avg:null,steps,top?200:180,(v)=>{const n=$('#rNum');n.innerHTML=bigHTML(v);if(!RM)pop(n,1.1,180);},D.cr.day?1:0,D.cr.day?D.cr.day+'超え':'');
+ await countRow($('#bDay'),D.before.day,D.after.day,D.cr.day?D.tg.yest:null,D.cr.day?D.tg.avg:null,steps,top?200:180,(v)=>{const n=$('#rNum');n.innerHTML=bigHTML(v);fitBig(n);if(!RM)pop($('#rCard'),1.08,180);},D.cr.day?1:0,D.cr.day?D.cr.day+'超え':'');
  if(D.first){await crossFx(1,'記録のはじまり',$('#bDay'));}
- if(!D.cr.day&&D.tg.yest!=null){const br=$('#bDay .br');br.textContent=`あと ${fmS(D.tg.yest-D.after.day+1)}`;}
  // 3 週・月
  FAST=false;let quiet=false;
  for(const [row,key,t,lab] of [[$('#bWeek'),'week',2,'先週超え'],[$('#bMonth'),'month',3,'先月超え']]){
   const tg=key==='week'?D.tg.lastW:D.tg.lastM,cr=D.cr[key];
-  if(tg==null){barSet(row,D.after[key],300);quiet=true;continue;}
+  if(tg==null){quiet=true;continue;}
   if(cr){await countRow(row,D.before[key],D.after[key],tg,null,4,150,null,t,lab);}
-  else{barSet(row,D.after[key],300);row.querySelector('.br').textContent=`あと ${fmS(tg-D.after[key]+1)}`;quiet=true;}
+  else{barSet(row,D.after[key],300);quiet=true;}
  }
  if(quiet)await wait(320);
  if(triple){
   FAST=false;await wait(200);const p=center($('#rCard'));
   flash('#fff4c2',0.85,420);shake($('.rwrap'),10,700);burst(p.x,p.y,RM?0:320,['#ffc93c','#ff5fb0','#5ec8ff','#5ef08a','#ffffff'],{sp:640,conf:true,ring:260});
   SND.hero();hap(3,120);setTimeout(()=>hap(1),520);
-  const st=$('#rStamp');st.className='stamp rb';st.textContent='トリプル更新';
-  st.animate(RM?[{opacity:0},{opacity:1,offset:.2},{opacity:1,offset:.8},{opacity:0}]:[{opacity:0,transform:'translate(-50%,-50%) scale(3)'},{opacity:1,transform:'translate(-50%,-50%) scale(1)',offset:.15},{opacity:1,transform:'translate(-50%,-50%) scale(1.06)',offset:.8},{opacity:0,transform:'translate(-50%,-50%) scale(1.1)'}],{duration:FAST?600:1800,easing:'ease-out'});
+  setTier(4,'トリプル更新',true);
   flameSet(4);await wait(1500);
  }
- if(top===0){SND.soft();hap(1);}
- // 4 レベル
+ if(top===0){SND.soft();hap(1);setTier(0,'今日の記録',false);}
+ // 4 レベル（理由の札つき）
  FAST=false;$('#rLvSec').classList.add('on');
- let lv=lvOf(D.xp0);$('#rLv').textContent=`レベル ${lv.L}`;$('#rLvFill').style.transition='none';$('#rLvFill').style.width=(lv.rest/lv.need*100)+'%';
+ const lm=$('#rLvMsg');let lv=lvOf(D.xp0);$('#rLv').innerHTML=`レベル<em>${lv.L}</em>`;$('#rLvFill').style.transition='none';$('#rLvFill').style.width=(lv.rest/lv.need*100)+'%';
  for(const [t,x] of D.reasons){chip($('#rWhy'),`${t} +${x}`,'xp');SND.coin();await wait(140);}
  const lsteps=top?8:5;
  for(let i=1;i<=lsteps;i++){const xp=Math.round(D.xp0+(D.xp1-D.xp0)*i/lsteps);const nl=lvOf(xp);
-  if(nl.L>lv.L){$('#rLvFill').style.transition='none';$('#rLvFill').style.width='100%';$('#rLv').textContent=`レベル ${nl.L}`;pop($('#rLv'),1.5,380);const p=center($('#rLv'));burst(p.x,p.y,50,['#7fb3ff','#ffffff']);SND.lvup();hap(2,90);$('#rLvMsg').textContent=`レベル ${nl.L} に上がった`;await wait(450);}
+  if(nl.L>lv.L){$('#rLvFill').style.transition='none';$('#rLvFill').style.width='100%';$('#rLv').innerHTML=`レベル<em>${nl.L}</em>`;pop($('#rLv'),1.5,380);const p=center($('#rLv'));burst(p.x,p.y,50,['#7fb3ff','#ffffff']);SND.lvup();hap(2,90);lm.className='up';lm.textContent='上がった！';await wait(450);}
   lv=nl;$('#rLvFill').style.transition=FAST?'none':'width 90ms linear';$('#rLvFill').style.width=(nl.rest/nl.need*100)+'%';await wait(90);}
- if(!$('#rLvMsg').textContent)$('#rLvMsg').textContent=`次のレベルまで あと ${fm(lv.need-lv.rest)}`;
- // 5 宝箱
- FAST=false;$('#rBoxSec').classList.add('on');
- for(const bx of D.boxes){const e=document.createElement('div');e.className='mini';e.innerHTML=chestSVG(bx.t);e.title=BOX_N[bx.t];$('#rBoxes').appendChild(e);pop(e,1.4,300);SND.tick(bx.t*3);await wait(160);}
- const total=S.boxes.length;
- $('#rBoxMsg').innerHTML=D.boxes.length?`${D.boxes.map(b=>BOX_N[b.t]).join('・')} を手に入れた${total>D.boxes.length?`<br>未開封は全部で ${total}`:''}`:(total?`未開封の宝箱 ${total}`:`次の木箱まで タイマー あと ${fm(60-S.timerCarry)}`);
- // 6 次
+ if(!lm.textContent)lm.innerHTML=`次まで <b>${fm(lv.need-lv.rest)}</b>`;
+ // 5 宝箱（手に入れた箱の絵を重ねる）。箱が無い日は連続日数（勝ちを1つ）
+ FAST=false;$('#rBoxSec').classList.add('on');$('#rBoxTx').classList.add('on');
+ const bx=$('#rBoxes'),total=S.boxes.length;
+ if(D.boxes.length){
+  const tiers=D.boxes.map(b=>b.t).sort((a,b)=>b-a),n=tiers.length;
+  const slots=n===1?[[0,150,4,-10,1]]:n===2?[[1,96,-2,40,.85],[0,130,34,-4,1]]:[[1,92,-6,44,.82],[2,92,74,44,.82],[0,126,20,-8,1]];
+  for(const [k,w,l,tp,br] of slots){const im=document.createElement('img');im.src=art(BOX_IMG[tiers[k]]);im.alt=BOX_N[tiers[k]];im.style.cssText=`width:${w}px;left:${l}px;top:${tp}px;${br<1?`filter:brightness(${br});`:''}${k===2?'transform:scaleX(-1);':''}`;bx.appendChild(im);if(!RM)im.animate([{transform:`${k===2?'scaleX(-1) ':''}scale(1.4)`,opacity:0},{transform:`${k===2?'scaleX(-1) ':''}scale(1)`,opacity:1}],{duration:300,easing:'cubic-bezier(.2,.8,.3,1)'});SND.tick(tiers[k]*3);await wait(160);}
+  $('#rBoxN').innerHTML=`<b>宝箱</b><em>+${n}</em>`;
+  const cnt=[0,0,0,0];D.boxes.forEach(b=>cnt[b.t]++);
+  $('#rBoxMsg').innerHTML=[3,2,1,0].filter(t=>cnt[t]).map(t=>`<span class="bt b${t}"><i>${BOX_N[t]}${cnt[t]>1?' ×'+cnt[t]:''}</i></span>`).join('')+(total>D.boxes.length?`<span>未開封 ${total}</span>`:'');
+ }else{
+  const im=document.createElement('img');im.src=art('c-flame');im.alt='';im.className='fl2';im.style.cssText='width:138px;left:6px;top:-4px';bx.appendChild(im);
+  $('#rBoxN').innerHTML=D.streak?`<em>${D.streak}</em><b>日連続</b>`:`<b>今週</b><em>${Math.round(D.after.week)}</em><b>分</b>`;
+  $('#rBoxMsg').innerHTML=total?`<span>未開封の宝箱 ${total}</span>`:`<span>次の木箱まで タイマー あと ${fm(60-S.timerCarry)}</span>`;
+ }
+ // 6 次の一言
  $('#rNextSec').classList.add('on');
  const L=[];
- if(top===0){L.push(`<span class="win">連続 ${D.streak}日 ・ 今週 ${fm(D.after.week)}</span>`);if(D.tg.yest!=null&&D.after.day<=D.tg.yest)L.push(`今日中なら 昨日まで あと <b>${fm(D.tg.yest-D.after.day+1)}</b>`);}
- if(!(top===0&&D.tg.yest!=null&&D.after.day<=D.tg.yest))L.push(`明日は <b>${fm(D.after.day+1)}</b> で今日を超える`);
- if(D.tg.lastW!=null&&!D.cr.week&&D.after.week<=D.tg.lastW)L.push(`先週超えまで あと <b>${fm(D.tg.lastW-D.after.week+1)}</b>（残り${D.st.wLeft}日）`);
- if(D.tg.lastM!=null&&!D.cr.month&&D.after.month<=D.tg.lastM)L.push(`先月超えまで あと <b>${fm(D.tg.lastM-D.after.month+1)}</b>（残り${D.st.mLeft}日）`);
+ if(top===0&&D.boxes.length)L.push(`<span class="win">連続 ${D.streak}日 ・ 今週 ${fm(D.after.week)}</span>`);
+ L.push(`明日は ${bHTML(D.after.day+1)} で今日を超える`);
  $('#rNext').innerHTML=L.map(x=>`<div>${x}</div>`).join('');
- $('#rOpen').style.display=total?'':'none';$('#rOpen').textContent=`割る（${total}）`;
+ $('#rOpen').style.display=total?'':'none';$('#rOpenT').textContent=`宝箱を開ける（${total}）`;
  $('#rBtns').classList.add('on');$('#rTap').style.display='none';RES=false;FAST=false;
 }
 $('#rHome').onclick=()=>{flameSet(0);show('home');};
@@ -975,17 +1012,25 @@ const BX={b:null,hits:0,need:3,item:null,ed:0,fake:false,broken:false};
 let shardShow=0;
 function rollItem(t){const w=DROP[t];let x=Math.random()*100,r=0;if(x<w[0])r=0;else if(x<w[0]+w[1])r=1;else r=2;const pool=ITEMS.filter(i=>i.r===r);return{item:pool[Math.random()*pool.length|0],ed:Math.random()<0.05?1:0};}
 function updShard(){$('#xShard').textContent=shardShow;}
+const HALO=['rgba(196,140,80,.30)','rgba(61,155,255,.38)','rgba(166,107,255,.42)','rgba(255,198,53,.48)'];
 function openBoxes(){if(!S.boxes.length){show('home');return;}show('box');shardShow=S.shards;updShard();$('#xSum').classList.remove('on');$('#xSum').innerHTML='';loadBox();}
 function loadBox(){
  const b=S.boxes[0];if(!b){show('home');return;}
  const ri=rollItem(b.t);Object.assign(BX,{b,hits:0,need:BOX_HITS[b.t],item:ri.item,ed:ri.ed,fake:ri.item.r===2&&Math.random()<0.3,broken:false});
- const ch=$('#xChest');ch.className='chest t'+b.t;ch.style.display='';ch.style.opacity=1;ch.style.transform='';$('#xCracks').innerHTML='';$('#xCracks').style.filter='';$('#xGlow').style.opacity=0;
- $('#xArt').innerHTML=chestSVG(b.t);const pp=$('#xPips');pp.innerHTML='<i></i>'.repeat(BX.need);pp.style.visibility='';
- $('#xRays').style.opacity=0;$('#xCard').className='card';$('#xHint').textContent=`${BOX_N[b.t]}を叩いて割る（${BX.need}回）`;$('#xHint').style.display='';
- $('#xLeft').textContent=`残り ${S.boxes.length}箱`;$('#xNext').hidden=true;$('#xAll').style.display=S.boxes.length>1?'':'none';
+ // 前の箱の割れるアニメ（fill:forwards）を消す＝「次の箱」で箱が透明のまま残る不具合の直し
+ const ch=$('#xChest');ch.getAnimations().forEach(a=>a.cancel());ch.className='chest';ch.style.display='';ch.style.opacity=1;ch.style.transform='';
+ $('#xCracks').innerHTML='';$('#xCracks').style.filter='';$('#xGlow').style.opacity=0;
+ $('#xArt').innerHTML=chestIMG(b.t);const pp=$('#xPips');pp.innerHTML='<i></i>'.repeat(BX.need);pp.style.visibility='';
+ const xa=$('#xArt2');xa.getAnimations().forEach(a=>a.cancel());xa.style.opacity=0;
+ const hl=$('#xHalo');hl.style.setProperty('--halo',HALO[b.t]);hl.style.opacity=1;
+ $('#xCard').className='card';$('#xCard').innerHTML='';$('#xHint').textContent=`叩いて割る（${BX.need}回）`;$('#xHint').style.display='';
+ const hd=$('#xHd');hd.getAnimations().forEach(a=>a.cancel());hd.className='hd k'+b.t;hd.style.setProperty('--bw',(b.t?150:130)+'px');$('#xHdT').textContent=BOX_N[b.t];
+ $('#xGhost').innerHTML='TREASURE<br>BOX';
+ $('#xLeft').innerHTML=`のこり<em>${S.boxes.length}</em>箱`;
+ $('#xNext').hidden=true;$('#xEq').hidden=true;$('#xDone').hidden=false;$('#xAll').hidden=S.boxes.length<=1;
  ch.animate(RM?[{opacity:0},{opacity:1}]:[{transform:'translateY(-40px) scale(.8)',opacity:0},{transform:'none',opacity:1}],{duration:380,easing:'cubic-bezier(.2,1.3,.4,1)'});
 }
-function addCrack(h){const cx=100+(Math.random()-.5)*40,cy=95+(Math.random()-.5)*30;const ang=Math.random()*Math.PI*2;let pts=[[cx,cy]];for(let j=0;j<2;j++){const a0=ang+j*Math.PI+(Math.random()-.5)*0.8;let x=cx,y=cy;for(let s=0;s<4+h;s++){const a=a0+(Math.random()-.5)*1.1;x+=Math.cos(a)*(12+Math.random()*10);y+=Math.sin(a)*(10+Math.random()*8);pts.push([x,y]);}const pl=document.createElementNS('http://www.w3.org/2000/svg','polyline');pl.setAttribute('points',pts.map(p=>p.join(',')).join(' '));$('#xCracks').appendChild(pl);pts=[[cx,cy]];}}
+function addCrack(h){const cx=100+(Math.random()-.5)*40,cy=112+(Math.random()-.5)*30;const ang=Math.random()*Math.PI*2;let pts=[[cx,cy]];for(let j=0;j<2;j++){const a0=ang+j*Math.PI+(Math.random()-.5)*0.8;let x=cx,y=cy;for(let s=0;s<4+h;s++){const a=a0+(Math.random()-.5)*1.1;x+=Math.cos(a)*(12+Math.random()*10);y+=Math.sin(a)*(10+Math.random()*8);pts.push([x,y]);}const pl=document.createElementNS('http://www.w3.org/2000/svg','polyline');pl.setAttribute('points',pts.map(p=>p.join(',')).join(' '));$('#xCracks').appendChild(pl);pts=[[cx,cy]];}}
 function shardFly(from,k){const tgt=center($('#xShard'));for(let i=0;i<k;i++){const a=-Math.PI/2+(Math.random()-.5)*2.2,sp=260+Math.random()*260;PS.push({k:'coin',x:from.x,y:from.y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,g:500,drag:1,s:5,life:3,age:0,c:'#7fc4ff',keep:true,home:tgt,homeAt:0.32+Math.random()*0.15,onHome:()=>{shardShow=Math.min(S.shards,shardShow+1);updShard();SND.coin();pop($('#xShard'),1.3,150);}});}pstart();}
 $('#xChest').addEventListener('pointerdown',e=>{e.preventDefault();if(BX.broken||!BX.b)return;ac();BX.hits++;const h=BX.hits;
  $$('#xPips i').forEach((p,i)=>p.classList.toggle('on',i<h));
@@ -999,45 +1044,63 @@ $('#xChest').addEventListener('pointerdown',e=>{e.preventDefault();if(BX.broken|
   if(BX.fake||BX.item.r>=1)burst(p.x,p.y,BX.item.r>=1?24:0,[c,'#ffffff'],{sp:240,ring:70});}
  else $('#xCracks').style.filter='drop-shadow(0 0 3px #fff)';
 });
+const RV_HD=['手に入れた','レアの当たり','金の当たり'],RV_ART=['c-blue','j-purple','c-gburst'],RV_GH=['NEW<br>ITEM','RARE<br>DROP','GOLD<br>DROP'];
+const TYPE_D={theme:n=>`タイマーの画面が <b>${n}</b> の色になる`,flame:n=>`結果発表の数字の後ろの炎が <b>${n}</b> になる`,snd:n=>`結果発表の数え上げが <b>${n}</b> の音になる`};
 async function breakBox(){
  BX.broken=true;const it=BX.item,r=it.r,ch=$('#xChest'),p=center(ch);$('#xHint').style.display='none';$('#xPips').style.visibility='hidden';
- if(BX.fake){flash(RAR_C[1],.5,220);SND.hit(5);shake($('#xArea'),8,300);burst(p.x,p.y,50,[RAR_C[1],'#ffffff']);await new Promise(res=>setTimeout(res,480));SND.promote();const pr=$('#xPromo');pr.animate([{opacity:0,transform:'scale(2)'},{opacity:1,transform:'scale(1)',offset:.2},{opacity:1,offset:.8},{opacity:0}],{duration:1300,easing:'ease-out'});}
+ if(BX.fake){flash(RAR_C[1],.5,220);SND.hit(5);shake($('#xArea'),8,300);burst(p.x,p.y,50,[RAR_C[1],'#ffffff']);await new Promise(res=>setTimeout(res,480));SND.promote();const pr=$('#xPromo');pr.animate([{opacity:0,transform:'rotate(-7deg) scale(2)'},{opacity:1,transform:'rotate(-7deg) scale(1)',offset:.2},{opacity:1,offset:.8},{opacity:0}],{duration:1300,easing:'ease-out'});}
  const c=RAR_C[r];flash(r===2?'#ffe9a8':'#ffffff',[.4,.6,.85][r],[200,260,360][r]);SND.brk(r);hap(r+1,110);shake($('#xArea'),[6,9,13][r],[250,330,450][r]);
  ch.animate([{transform:'scale(1)',opacity:1},{transform:'scale(1.25)',opacity:0}],{duration:170,fill:'forwards'});setTimeout(()=>{ch.style.display='none';},170);
  if(!RM)for(let i=0;i<26;i++){const a=Math.random()*Math.PI*2,sp=200+Math.random()*420;PS.push({k:'deb',x:p.x,y:p.y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp-150,g:900,drag:0.6,s:8+Math.random()*12,rot:Math.random()*6,vr:(Math.random()-.5)*16,life:1.1,age:0,c:BOX_C[BX.b.t]});}
  burst(p.x,p.y,[40,90,180][r],[c,'#ffffff',r===2?'#fff2b0':c],{sp:[380,480,620][r],conf:r===2,ring:[110,150,220][r]});
- const ry=$('#xRays');ry.style.setProperty('--rc',c+'55');ry.animate([{opacity:0,transform:'scale(.4)'},{opacity:[.35,.55,.85][r],transform:'scale(1)'}],{duration:500,fill:'forwards',easing:'ease-out'});
+ // 後ろの光＝格の色の生成の絵（景品の絵は黒地を丸く残して光から抜く＝溶けない）
+ $('#xHalo').style.opacity=0;
+ const xa=$('#xArt2');xa.style.backgroundImage=`url(${art(RV_ART[r])})`;xa.getAnimations().forEach(a=>a.cancel());
+ xa.animate(RM?[{opacity:0},{opacity:[.55,.8,.9][r]}]:[{opacity:0,transform:'scale(.5)'},{opacity:[.55,.8,.9][r],transform:'scale(1)'}],{duration:560,fill:'forwards',easing:'cubic-bezier(.2,.8,.3,1)'});
  // 持ち物に入れる
- const own=S.owned[it.id];let status='',isNew=false;
- if(!own){S.owned[it.id]={ed:BX.ed,from:BX.b.from};isNew=true;status='<b style="color:var(--green)">NEW</b>';}
- else if(BX.ed&&!own.ed){own.ed=1;own.from=BX.b.from;isNew=true;status='<b style="color:#ff9ad5">光る版 NEW</b>';}
- else{S.shards+=DUP[r];status=`かぶり → 欠片 +${DUP[r]}`;}
+ const own=S.owned[it.id];let isNew=false,dup=0;
+ if(!own){S.owned[it.id]={ed:BX.ed,from:BX.b.from};isNew=true;}
+ else if(BX.ed&&!own.ed){own.ed=1;own.from=BX.b.from;isNew=true;}
+ else{S.shards+=DUP[r];dup=DUP[r];}
  S.boxes.shift();save();
- const card=$('#xCard');card.style.setProperty('--rc',c);card.className='card on'+((S.owned[it.id].ed)?' ed':'');
- card.innerHTML=`<span class="cr">${RAR_N[r]}${BX.ed?'・光る版':''}</span><div class="cn">${it.n}</div><div class="ct">${TYPE_N[it.t]}</div><div class="cpv">${pvHTML(it)}</div><div class="cs">${status}</div><div class="cf">${BX.b.from} の箱から</div>`+
-  `<div class="cbtn">${S.equip[it.t]===it.id?'<span class="ct">付けています</span>':`<button class="btn btn-gold" id="xEquip">付けてみる</button>`}</div>`;
- card.animate(RM?[{opacity:0},{opacity:1}]:[{transform:'scale(.2) translateY(60px)',opacity:0},{transform:'scale(1.08)',opacity:1,offset:.6},{transform:'scale(1)',opacity:1}],{duration:460,easing:'cubic-bezier(.2,.8,.3,1)'});
- if(!isNew)setTimeout(()=>shardFly(center(card),Math.min(12,DUP[r]/2|0)),500);
- const eq=$('#xEquip');if(eq)eq.onclick=()=>{S.equip[it.t]=it.id;save();eq.outerHTML='<span class="ct">付けました</span>';if(it.t==='snd')previewSnd(it.id);else toast(it.t==='theme'?'次のタイマーからこの色になります':'次の結果発表からこの炎になります');};
- const pv=card.querySelector('.pvs');if(pv)pv.onclick=()=>previewSnd(it.id);
- $('#xLeft').textContent=`残り ${S.boxes.length}箱`;
- $('#xNext').hidden=!S.boxes.length;$('#xAll').style.display=S.boxes.length>1?'':'none';
+ const hd=$('#xHd');hd.className='hd k'+(r+1);hd.style.setProperty('--bw',[150,190,220][r]+'px');$('#xHdT').textContent=RV_HD[r];slam(hd);
+ $('#xGhost').innerHTML=RV_GH[r];
+ const list=ITEMS.filter(i=>i.t===it.t),have=list.filter(i=>S.owned[i.id]).length;
+ const card=$('#xCard');card.style.setProperty('--rc',c);card.className='card on r'+r+((S.owned[it.id].ed)?' ed':'');
+ card.innerHTML=`<div class="prize${it.rainbow?' rb2':''}"${it.t==='snd'?' data-snd="1"':''}>${prizeHTML(it)}${isNew?`<div class="new"><b>${BX.ed?'光る版 NEW':'NEW'}</b></div>`:`<div class="new dup"><b>かぶり 欠片+${dup}</b></div>`}</div>`+
+  `<div class="grb r${r}" style="--rc:${c}"><span class="gr"><b class="${r===2?'one':''}">${RAR_N[r]}</b></span><span class="nm">${it.n}<small>${TYPE_N[it.t]}</small></span></div>`+
+  `<p class="cd">${TYPE_D[it.t](it.n)}</p><small class="cf">図鑑 ${TYPE_N[it.t]} ${have} / ${list.length} ・ ${BX.b.from} の箱から</small>`;
+ card.animate(RM?[{opacity:0},{opacity:1}]:[{transform:'scale(.3) translateY(60px)',opacity:0},{transform:'scale(1.06)',opacity:1,offset:.6},{transform:'scale(1)',opacity:1}],{duration:460,easing:'cubic-bezier(.2,.8,.3,1)'});
+ if(dup)setTimeout(()=>shardFly(center(card.querySelector('.prize')),Math.min(12,dup/2|0)),500);
+ const pz=card.querySelector('[data-snd]');if(pz){pz.style.cursor='pointer';pz.onclick=()=>previewSnd(it.id);}
+ $('#xLeft').innerHTML=`のこり<em>${S.boxes.length}</em>箱`;
+ // 金のボタンは1つだけ＝付けてみる（付けられる時）か 次の箱
+ const canEq=S.equip[it.t]!==it.id,more=S.boxes.length>0;
+ $('#xAll').hidden=true;$('#xEq').hidden=!canEq;
+ const nx=$('#xNext');nx.hidden=!more;nx.className=canEq?'tb':'btn gold';
 }
-$('#xNext').onclick=()=>{$('#xRays').getAnimations().forEach(a=>a.cancel());loadBox();};
+$('#xEq').onclick=()=>{const it=BX.item;if(!it)return;S.equip[it.t]=it.id;save();$('#xEq').hidden=true;const nx=$('#xNext');if(!nx.hidden)nx.className='btn gold';
+ if(it.t==='snd')previewSnd(it.id);else toast(it.t==='theme'?'次のタイマーからこの色になります':'次の結果発表からこの炎になります');};
+$('#xNext').onclick=()=>{loadBox();};
 $('#xDone').onclick=()=>{PS.length=0;show('home');};
 $('#xAll').onclick=async()=>{
- const sum=$('#xSum');sum.innerHTML='';sum.classList.add('on');$('#xChest').style.display='none';$('#xPips').style.visibility='hidden';$('#xCard').className='card';$('#xHint').style.display='none';$('#xRays').getAnimations().forEach(a=>a.cancel());$('#xRays').style.opacity=0;$('#xAll').style.display='none';$('#xNext').hidden=true;
+ const sum=$('#xSum');sum.innerHTML='';sum.classList.add('on');$('#xChest').style.display='none';$('#xPips').style.visibility='hidden';$('#xCard').className='card';$('#xHint').style.display='none';
+ $('#xHalo').style.opacity=0;$('#xArt2').getAnimations().forEach(a=>a.cancel());$('#xArt2').style.opacity=0;$('#xAll').hidden=true;$('#xNext').hidden=true;$('#xEq').hidden=true;
+ const hd=$('#xHd');hd.className='hd k0';$('#xHdT').textContent='まとめて割った';slam(hd);
  let i=0;while(S.boxes.length){const b=S.boxes.shift();const ri=rollItem(b.t),it=ri.item;const own=S.owned[it.id];let tag='NEW';if(!own)S.owned[it.id]={ed:ri.ed,from:b.from};else if(ri.ed&&!own.ed){own.ed=1;tag='光る版';}else{S.shards+=DUP[it.r];tag=`欠片+${DUP[it.r]}`;}
-  save();const tl=document.createElement('div');tl.className='tile'+(ri.ed?' ed':'');tl.style.width='30%';tl.style.borderColor=RAR_C[it.r];tl.innerHTML=`${pvHTML(it)}<div class="tn">${it.n}</div><span class="tr" style="background:${RAR_C[it.r]}">${tag}</span>`;sum.appendChild(tl);pop(tl,1.3,260);SND.tick(i*2+it.r*4);if(it.r)hap(it.r);const p=center(tl);burst(p.x,p.y,[10,30,70][it.r],[RAR_C[it.r],'#fff'],{sp:260,ring:60});i++;$('#xLeft').textContent=`残り ${S.boxes.length}箱`;await new Promise(r=>setTimeout(r,it.r===2?700:360));}
+  save();const tl=document.createElement('div');tl.className='tile'+(ri.ed?' ed':'');tl.style.setProperty('--rc',RAR_C[it.r]);tl.innerHTML=`${pvHTML(it)}<div class="tn">${it.n}</div><span class="tr"><i>${tag}</i></span>`;sum.appendChild(tl);pop(tl,1.3,260);SND.tick(i*2+it.r*4);if(it.r)hap(it.r);const p=center(tl);burst(p.x,p.y,[10,30,70][it.r],[RAR_C[it.r],'#fff'],{sp:260,ring:60});i++;$('#xLeft').innerHTML=`のこり<em>${S.boxes.length}</em>箱`;await new Promise(r=>setTimeout(r,it.r===2?700:360));}
  shardShow=S.shards;updShard();
 };
 
-// ---------- 見本の絵・音 ----------
+// ---------- 景品の見本（炎＝生成の絵・タイマーの色＝色の見本・音＝音の形） ----------
+function themePV(it){return `<div class="pvt" style="background:${it.bg};color:${it.fg};--pa:${it.ac}"><small>今日の合計</small><b class="${it.gold?'goldtx':''}">42</b><i></i></div>`;}
+function sndPV(it){return `<div class="sndp" style="--sc:${it.sc}">${it.w.map(h=>`<i style="height:${h*10}%"></i>`).join('')}</div>`;}
 function pvHTML(it){
- if(it.t==='theme')return `<div class="pv" style="background:${it.bg};color:${it.fg}"><svg class="pvring" viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="16" fill="none" stroke="rgba(255,255,255,.12)" stroke-width="3"/><circle cx="20" cy="20" r="16" fill="none" stroke="${it.ac}" stroke-width="3" stroke-linecap="round" stroke-dasharray="70 101" transform="rotate(-90 20 20)"/></svg><span class="pn ${it.gold?'goldtx':''}">42</span></div>`;
- if(it.t==='flame'){const c=it.c,id='pf_'+it.id;return `<div class="pv pvf"${it.rainbow?' data-rb':''}><svg viewBox="0 0 48 60" aria-hidden="true"><defs><linearGradient id="${id}o" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${c[2]}"/><stop offset="1" stop-color="${c[1]}"/></linearGradient><linearGradient id="${id}i" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${c[1]}"/><stop offset="1" stop-color="${c[0]}"/></linearGradient></defs><path d="${FL_O}" fill="url(#${id}o)" style="filter:drop-shadow(0 0 6px ${c[1]})"/><path d="${FL_I}" fill="url(#${id}i)"/></svg></div>`;}
- return `<div class="pv pvs" style="color:${RAR_C[it.r]}">${NOTE_SVG}</div>`;
+ if(it.t==='theme')return `<div class="pv">${themePV(it)}</div>`;
+ if(it.img)return `<div class="pv${it.rainbow?' rb2':''}${it.t==='snd'?' snd':''}"><img src="${art(it.img)}" alt=""></div>`;
+ return `<div class="pv">${sndPV(it)}</div>`;
 }
+function prizeHTML(it){if(it.t==='theme')return themePV(it);if(it.img)return `<img src="${art(it.img)}" alt="${it.n}">`;return sndPV(it);}
 function previewSnd(id){if(!soundOn()){toast('音がオフです');return;}ac();for(let i=0;i<6;i++)setTimeout(()=>SND.tick(i*2,id),i*200);}
 
 // ---------- 図鑑 ----------
@@ -1045,9 +1108,9 @@ let DT='theme';
 $('#dTabs').onclick=e=>{const b=e.target.closest('button');if(!b)return;DT=b.dataset.t;$$('#dTabs button').forEach(x=>x.classList.toggle('on',x===b));renderDex();};
 function renderDex(){
  $('#dShard').textContent=S.shards;const list=ITEMS.filter(i=>i.t===DT);const have=list.filter(i=>S.owned[i.id]).length;
- $('#dProg').innerHTML=`<span><b class="n">${have}</b> / ${list.length}</span><div class="lvtrack"><div class="lvfill" style="width:${have/list.length*100}%"></div></div><span class="hint">鍵の物は欠片で取れる</span>`;
+ $('#dProg').innerHTML=`<b>${have}</b><span>/ ${list.length}</span><div class="lb"><i style="width:${have/list.length*100}%"></i></div><span class="hint">鍵の物は欠片で取れる</span>`;
  $('#dGrid').innerHTML=list.map(it=>{const o=S.owned[it.id],eq=S.equip[it.t]===it.id;
-  return `<div class="tile${o?'':' lock'}${eq?' eq':''}${o&&o.ed?' ed':''}" data-id="${it.id}" style="--rc:${RAR_C[it.r]}">${eq?`<span class="eqm">${CHECK_SVG}</span>`:''}${o?'':`<span class="lk">${LOCK_SVG}</span>`}${pvHTML(it)}<div class="tn">${it.n}</div><span class="tr">${RAR_N[it.r]}</span>${o?`<div class="from">${eq?'付けている':o.from}</div>`:`<div class="price">${SHARD_SVG}${PRICE[it.r]}</div>`}</div>`;}).join('');
+  return `<div class="tile${o?'':' lock'}${eq?' eq':''}${o&&o.ed?' ed':''}" data-id="${it.id}" style="--rc:${RAR_C[it.r]}">${eq?`<span class="eqm">${CHECK_SVG}</span>`:''}${o?'':`<span class="lk">${LOCK_SVG}</span>`}${pvHTML(it)}<div class="tn">${it.n}</div><span class="tr"><i>${RAR_N[it.r]}</i></span>${o?`<div class="from">${eq?'付けている':o.from}</div>`:`<div class="price">${SM}${PRICE[it.r]}</div>`}</div>`;}).join('');
 }
 $('#dGrid').onclick=e=>{const t=e.target.closest('.tile');if(!t)return;const it=IT[t.dataset.id],o=S.owned[it.id];
  if(o){S.equip[it.t]=it.id;save();renderDex();if(it.t==='snd')previewSnd(it.id);else toast(`「${it.n}」を付けました`);return;}
@@ -1064,7 +1127,7 @@ $('#lSave').onclick=()=>{const n=v=>{v=String(v).trim();return v===''?null:Math.
 $('#lReset').onclick=()=>{if(confirm('記録・宝箱・図鑑を全部消します。よろしいですか？')){localStorage.removeItem(KEY);location.reload();}};
 $$('[data-demo]').forEach(b=>b.onclick=()=>{ac();demo(b.dataset.demo);});
 function demo(kind){
- if(kind==='boxes'){S.boxes.push({t:0,from:'試し'},{t:1,from:'試し'},{t:3,from:'試し'});save();openBoxes();return;}
+ if(kind==='boxes'){S.boxes.push({t:0,from:'試し'},{t:1,from:'試し'},{t:2,from:'試し'},{t:3,from:'試し'});save();openBoxes();return;}
  const P={none:{m:22,b:[30,300,1500],t:[70,75,600,2400]},day:{m:52,b:[30,300,1500],t:[70,64,600,2400]},week:{m:55,b:[40,560,1500],t:[70,72,600,2400]},month:{m:60,b:[40,300,2370],t:[70,72,600,2400]},triple:{m:75,b:[45,560,2380],t:[90,80,620,2420]}}[kind];
  const a=P.b.map(v=>v+P.m),[y,av,lw,lm]=P.t;
  const cr={day:crossed(P.b[0],a[0],y)?'昨日':crossed(P.b[0],a[0],av)?'7日平均':null,week:crossed(P.b[1],a[1],lw),month:crossed(P.b[2],a[2],lm)};
@@ -1079,8 +1142,9 @@ function demo(kind){
 }
 
 // ---------- 起動 ----------
-$('#tBoxArt').innerHTML=chestSVG(0);
 if(S.running)openTimer();else show('home');
+addEventListener('resize',()=>{if($('#home').classList.contains('on'))fitBig($('#hBig'));});
+document.fonts&&document.fonts.ready.then(()=>{if($('#home').classList.contains('on'))fitBig($('#hBig'));});
 </script>
 </body>
 </html>
